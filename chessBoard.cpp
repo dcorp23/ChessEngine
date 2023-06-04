@@ -96,9 +96,7 @@ int main(void) {
     Board board = Board(Pawns, Knights, Bishops, Rooks, Queen, King, 
                         Pawns>>40, Knights>>56, Bishops>>56, Rooks>>56, Queen>>56, King>>56);
 
-    for (int i = 0; i < 64; i++) {
-        printMap(getQueenAttackMask(i));
-    }
+    initMagicNumbers();
 
     return 0;
 }
