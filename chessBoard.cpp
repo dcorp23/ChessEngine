@@ -96,7 +96,24 @@ int main(void) {
     Board board = Board(Pawns, Knights, Bishops, Rooks, Queen, King, 
                         Pawns>>40, Knights>>56, Bishops>>56, Rooks>>56, Queen>>56, King>>56);
 
-    initMagicNumbers();
+    //initMagicNumbers();
+    initJumpingPieceAttacks();
+    initSlidingPieceAttack(0); //rooks
+    initSlidingPieceAttack(1); //bishops
+
+    std::cout << "initialization complete\n";
+
+    map occupancy = 0ULL;
+    occupancy |= (1ULL << e4);
+    occupancy |= (1ULL << e5);
+    occupancy |= (1ULL << d4);
+    occupancy |= (1ULL << d5);
+    occupancy |= (1ULL << b7);
+    occupancy |= (1ULL << b2);
+    occupancy |= (1ULL << g7);
+    occupancy |= (1ULL << g2);
+
+    printMap(getRookAttacks(e7, occupancy));
 
     return 0;
 }

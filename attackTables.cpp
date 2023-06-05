@@ -28,16 +28,19 @@ class PseudoRNG {
         }
 
         map nextRN() {
-            seed += 0x9e3779b97f4a7c15;                /* increment the seed variable */
-            map z = seed;                              /* copy the seed to a working variable */
-            z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;  /* xor the variable with the variable right bit shifted 30 then multiply by a constant */
-            z = (z ^ (z >> 27)) * 0x94d049bb133111eb;  /* xor the variable with the variable right bit shifted 27 then multiply by a constant */
-            return z ^ (z >> 31);                      /* return the variable xored with itself right bit shifted 31 */
+            seed += 0x9e3779b97f4a7c15;                // increment the seed variable 
+            map z = seed;                              // copy the seed to a working variable 
+            z = (z ^ (z >> 15)) * 0xbf58476d1ce4e5b9;  // xor the variable with the variable right bit shifted 30 then multiply by a constant 
+            z = (z ^ (z << 12)) * 0x94d049bb133111eb;  // xor the variable with the variable right bit shifted 27 then multiply by a constant 
+            return z ^ (z >> 9);                      // return the variable xored with itself right bit shifted 31 
         }
+
+        map magicNumberCandidate() {
+            return (nextRN() & nextRN() & nextRN());
+        } 
 };
 
-//global rng
-PseudoRNG rng = PseudoRNG(1804289383);
+PseudoRNG rng = PseudoRNG(0x66ffcd0e);
 
 
 //helper functions
@@ -93,137 +96,137 @@ const int relevantRookBits[64] = {
 };
 
 const map bishopMagicNumbers[64] = {
-    0xe4d15a015a60f865ULL,
-    0x6c1d7b088e612181ULL,
-    0x1b0a98aa766833e3ULL,
-    0xf786d8b2a49b1610ULL,
-    0x21ac4c4f0f6a6676ULL,
-    0xbeb01ec8ed3115e8ULL,
-    0x7982c2a25bf347caULL,
-    0x9d06649dfccf4385ULL,
-    0xb42e25705b2d8978ULL,
-    0x2058f416ea8d6381ULL,
-    0x5086f0f4080c4d79ULL,
-    0x4a68c30a44d63e48ULL,
-    0x653c35279464f972ULL,
-    0x874bd3b652683e9cULL,
-    0x10129adfe483798dULL,
-    0xfa9c9aa3bcdd3db7ULL,
-    0xb016ef4f4434c3adULL,
-    0x835ba85de7d8ba77ULL,
-    0xda68243cc18009d0ULL,
-    0xe98fffe3f916cb2cULL,
-    0x918cdcb542e2ad4eULL,
-    0x1a19e008971efe33ULL,
-    0xce279926bb12f8fdULL,
-    0xf21f5a06122ceff7ULL,
-    0xa5dbdefc633ea09cULL,
-    0xe338185cafaec99ULL,
-    0xdc9d05946c35e2b1ULL,
-    0x8778bf63484e6b66ULL,
-    0x7d45780810e757c9ULL,
-    0xc23007a29fe33df4ULL,
-    0xde61da510ff002f3ULL,
-    0xb010b48ce12fb816ULL,
-    0xa02ec03b601539ebULL,
-    0x2450d1a2ddfdba4aULL,
-    0x638c781816c08590ULL,
-    0x974336b796aa1fcaULL,
-    0x1252f9d04b4fc29ULL,
-    0xc4679a2f3d69a7f0ULL,
-    0x589bec9634d04ULL,
-    0xc3fe7720904c5f96ULL,
-    0x5325faa282b997d2ULL,
-    0xc7ac712581c48809ULL,
-    0x2019b05319781a7bULL,
-    0xd997e6bcf93f2e1bULL,
-    0x9cbfa92c0173a413ULL,
-    0x7b480012431ed872ULL,
-    0x157e1caf3ee25679ULL,
-    0x74ddb69569e1f5e7ULL,
-    0x77bc179cfff99c28ULL,
-    0xcb0417a516207a8dULL,
-    0xf3f2585771a1c5dbULL,
-    0x9938686127be4cffULL,
-    0x62ca09a074b1818ULL,
-    0x786e3807fb236f7bULL,
-    0xdc0b91643f7c0173ULL,
-    0xcad6e9c5a045c292ULL,
-    0x2cdab4bebc27e627ULL,
-    0xea9026afd6ab5fc3ULL,
-    0xcd555a499880ff56ULL,
-    0x933e37b233d79e20ULL,
-    0x574ac91c5caa7317ULL,
-    0x4cd98c81bbcc9a00ULL,
-    0x74a5a11aa162f88fULL,
-    0x9e70025298550564ULL
+    0x8004212801130202ULL,
+    0x883130008101c020ULL,
+    0x141840100410001ULL,
+    0x8820a0200900400ULL,
+    0x2204042010030000ULL,
+    0x101010840800000ULL,
+    0x481080104201004ULL,
+    0x2228050082084ULL,
+    0x40900421140402ULL,
+    0x10105002a8110023ULL,
+    0x11084224002410ULL,
+    0x40080602400012ULL,
+    0x24411040040c00ULL,
+    0x40108a0802382010ULL,
+    0x4204104104001ULL,
+    0x8010010880900800ULL,
+    0x3842024828010401ULL,
+    0x18102012048213ULL,
+    0x50083101020414ULL,
+    0x400800802004700ULL,
+    0xa044102202020205ULL,
+    0x483014808821001ULL,
+    0x84404401145100ULL,
+    0xa6004020840440ULL,
+    0x10042008481002ULL,
+    0x855c41020280208ULL,
+    0x840208050010044ULL,
+    0x114080044010411ULL,
+    0xe41001009004000ULL,
+    0x8092041112004200ULL,
+    0x8023100410402ULL,
+    0x2002000808800ULL,
+    0x1582802202060ULL,
+    0x402869088081010ULL,
+    0x318203004080288ULL,
+    0x12004041c40100ULL,
+    0x44004010240100ULL,
+    0x888900280110080ULL,
+    0x2b288021000420dULL,
+    0x11022421a08402ULL,
+    0x821110404000ULL,
+    0x32206808080a0400ULL,
+    0x2010080500aa100ULL,
+    0xc020124000202ULL,
+    0x6000040104001211ULL,
+    0x44881004400408ULL,
+    0x4090900200484080ULL,
+    0x410020041008051ULL,
+    0x4110862108040ULL,
+    0x940340104100403ULL,
+    0x80c0004218040080ULL,
+    0x2a20021020880005ULL,
+    0xa920a04424080aULL,
+    0x41042021420ULL,
+    0x91210604094000ULL,
+    0x100102140044ceULL,
+    0x880240444c206004ULL,
+    0x400004402099030ULL,
+    0x8204c022100ULL,
+    0x8828180100840400ULL,
+    0x70020a102400ULL,
+    0x22080404081202ULL,
+    0x3080208404080048ULL,
+    0x22680808005040ULL
 };
 
 const map rookMagicNumbers[64] = {
-    0xe62cda4fc5d0bedeULL,
-    0x71db0f33edbf0dacULL,
-    0x15a4e2c272a6e021ULL,
-    0xdd054353dde9bf34ULL,
-    0xa8d8887b552e86eeULL,
-    0x8539ff6d3c740979ULL,
-    0xc17daff803baeb9bULL,
-    0xdba87d70dc9b9e71ULL,
-    0x34d9320d8378ca8fULL,
-    0x101fd1629e43ad32ULL,
-    0xd138e0f8988363a5ULL,
-    0x78e15b4c8a66a298ULL,
-    0x4d192406b7efec42ULL,
-    0x3b23cc7e5fd08b6aULL,
-    0x4ea6175171454b9cULL,
-    0xef4c6112593fb469ULL,
-    0x1dd4f175bc7d9e4aULL,
-    0x8f771cdef34274e6ULL,
-    0xdfd88a052f531d2dULL,
-    0x9827377940a1eaafULL,
-    0x7b02573dc3341acbULL,
-    0x8f7165e9882bd590ULL,
-    0x1b8ca000a707651ULL,
-    0x641be0cab8ab7fe7ULL,
-    0xb847a7f8a5862301ULL,
-    0x185afb8f2366b4aaULL,
-    0x7cce587f2c77ac17ULL,
-    0x725bcbec398617cULL,
-    0x44c065c38e0e3ad7ULL,
-    0x19991c44d6964affULL,
-    0x881163237fa72deeULL,
-    0x852c391fd5e173faULL,
-    0x7e967e9eeeac6687ULL,
-    0x7e46d73dd9886389ULL,
-    0x4d1a26162ec4824fULL,
-    0xfb033ce26c08e8f0ULL,
-    0x263e940bb6ee31cdULL,
-    0xd35e36fe45bc7ae4ULL,
-    0xfabc819e06604fd9ULL,
-    0x830b151d5ded7b3dULL,
-    0xf4cb48d4c8ff316bULL,
-    0x48cf7b0bc821426aULL,
-    0xcdd45a7d6ea01231ULL,
-    0x61b1dfd4cf13d5c7ULL,
-    0xe0b00f9db4f28800ULL,
-    0xd571cf0f179cbb03ULL,
-    0x34124d253411a525ULL,
-    0x2e13bf87f6f7ced2ULL,
-    0x710ee20b677fdb93ULL,
-    0xe6a3973a15b5a0f6ULL,
-    0x4d47375a8aa0d382ULL,
-    0xe46a12d5b2c47777ULL,
-    0xe3fd82fc656c21aeULL,
-    0x647076f86ab92fbaULL,
-    0x7299fc40dac1d6e0ULL,
-    0x85723189a48adc88ULL,
-    0xb7086ef4fe20a561ULL,
-    0xc42c9224501e4816ULL,
-    0xcec2ac22a663bc7bULL,
-    0x19ece37845444285ULL,
-    0x6004a6c872fa4571ULL,
-    0xa00cbd7d629d97b1ULL,
-    0xe97bd18a9965858eULL,
-    0xa2ebb92e21416d54ULL
+    0x200102201004080ULL,
+    0x8040200040001000ULL,
+    0x1080088010002000ULL,
+    0x5080100080080004ULL,
+    0x8480223800802400ULL,
+    0xa900280100024400ULL,
+    0x480110000801200ULL,
+    0x8100082042088100ULL,
+    0x500a002604804100ULL,
+    0x4030808040002000ULL,
+    0xc0802000100080ULL,
+    0x8802001140092200ULL,
+    0x40088048009c0080ULL,
+    0x800400800200ULL,
+    0x9484800100020080ULL,
+    0x1001800100004480ULL,
+    0x80084000200040ULL,
+    0x30004040002004ULL,
+    0x4102888020021000ULL,
+    0x416808010000800ULL,
+    0x408004004004200ULL,
+    0xa000080104201040ULL,
+    0x2010100040200ULL,
+    0x220020009084084ULL,
+    0x6480004040002000ULL,
+    0x6420022280400280ULL,
+    0xc10080020200400ULL,
+    0x428100100090420ULL,
+    0x810040080080080ULL,
+    0x400040080020080ULL,
+    0x108120c00902108ULL,
+    0x2020801c80044100ULL,
+    0x80002000400040ULL,
+    0x840002801a01002ULL,
+    0x20802012004200ULL,
+    0xa000801000800800ULL,
+    0x4004004008080080ULL,
+    0x260040080800200ULL,
+    0x21004000801ULL,
+    0x9810142082000841ULL,
+    0x28400880218000ULL,
+    0x220402010004002ULL,
+    0x2200041030012ULL,
+    0xa18002010010100ULL,
+    0x480080100050010ULL,
+    0x8401000400090002ULL,
+    0x10080110040002ULL,
+    0x4080012040820004ULL,
+    0x4030400880082080ULL,
+    0x4400400080200180ULL,
+    0x1050200010008080ULL,
+    0x1800200900100100ULL,
+    0x20080004008080ULL,
+    0x1701002400088300ULL,
+    0x400110248301400ULL,
+    0x8008800100004080ULL,
+    0x100142040800103ULL,
+    0x2048021081042ULL,
+    0xa04041000c200011ULL,
+    0x26024b0000901ULL,
+    0x41030008000224d1ULL,
+    0x2001804011026ULL,
+    0x21800d00104ULL,
+    0x201000032008041ULL
 };
 
 /*
@@ -315,6 +318,10 @@ map getKingAttackMask(int square) {
     return attacks;
 }
 
+//attack mask to get the relevant bits for a rook and bishop attack
+//edges aren't relevant because if there is a piece on the
+//edge it doesn't block other squares so we can exclude it
+//to save space on the amount of occupancy variations
 map getRookAttackMask(int square) {
     map startBoard = 1ULL << square;
     map attacks = 0ULL;
@@ -382,6 +389,8 @@ map getQueenAttackMask(int square) {
     return attacks;
 }
 
+//takes an occupancy mask and will stop attack rays
+//when hitting a blocker, the rays will go to the edge of the board
 map getBishopAttackMaskWithBlockers(int square, map blockers) {
     map startBoard = 1ULL << square;
     map attacks = 0ULL;
@@ -418,6 +427,8 @@ map getBishopAttackMaskWithBlockers(int square, map blockers) {
     return attacks;
 }
 
+//takes an occupancy mask and will stop attack rays
+//when hitting a blocker, the rays will go to the edge of the board
 map getRookAttackMaskWithBlockers(int square, map blockers) {
     map startBoard = 1ULL << square;
     map attacks = 0ULL;
@@ -427,28 +438,28 @@ map getRookAttackMaskWithBlockers(int square, map blockers) {
     //file 1 is a on a chess board
     int file = (square % 8) + 1;
 
-    //up right ray
-    for (int i = 1; i <= std::min(rank - 1, 8 - file); i++) {
-        attacks |= ((startBoard >> (i * 8)) << i);
-        if (((startBoard >> (i * 8)) << i) & blockers) break;
+    //Down ray
+    for (int i = 1; i <= (8 - rank); i++) {
+        attacks |= (startBoard << (i * 8));
+        if ((startBoard << (i * 8)) & blockers) break;
     }
 
-    //down right ray
-    for (int i = 1; i <= std::min(8 - rank, 8 - file); i++) {
-        attacks |= ((startBoard << (i * 8)) << i);
-        if (((startBoard << (i * 8)) << i) & blockers) break;
+    //Up ray
+    for (int i = 1; i < rank; i++) {
+        attacks |= (startBoard >> (i * 8));
+        if ((startBoard >> (i * 8)) & blockers) break;
     }
 
-    //up left ray
-    for (int i = 1; i <= (std::min(rank - 1, file - 1)); i++) {
-        attacks |= ((startBoard >> (i * 8)) >> i);
-        if (((startBoard << (i * 8)) << i) & blockers) break;
+    //Right ray
+    for (int i = 1; i <= (8 - file); i++) {
+        attacks |= (startBoard << i);
+        if ((startBoard << i) & blockers) break;
     }
 
-    //down left ray
-    for (int i = 1; i <= (std::min(8 - rank, file - 1)); i++) {
-        attacks |= ((startBoard << (i * 8)) >> i);
-        if (((startBoard << (i * 8)) >> i) & blockers) break;
+    //Left ray
+    for (int i = 1; i < file; i++) {
+        attacks |= (startBoard >> i);
+        if ((startBoard >> i) & blockers) break;
     }
 
     return attacks;
@@ -461,8 +472,8 @@ bishop = 1, rook = 0;
 map findMagicNumber(int square, int relevantBits, int bishop) {
     map occupancies[4096];
     map attacks[4096];
-
     map usedAttacks[4096];
+    
     //get attack mask from square
     map attackMask = bishop ? getBishopAttackMask(square) : getRookAttackMask(square);
 
@@ -481,18 +492,18 @@ map findMagicNumber(int square, int relevantBits, int bishop) {
     }
 
     //generating a random number
-    for (int i = 0; i < 100000; i++) {
-        map magicNumber = rng.nextRN(); //actual number
+    for (int i = 0; i < 10000000; i++) {
+        map magicNumber = rng.magicNumberCandidate(); //actual number
 
         //filter bad magic numbers
         if (getBitCount((attackMask * magicNumber) & 0xFF00000000000000) < 6) continue;
 
         //initialized usedAttacks at 0
-        std::fill(usedAttacks, usedAttacks + 4095, 0ULL);
+        std::fill(usedAttacks, usedAttacks + 4096, 0ULL);
 
         int index, fail;
         //loop through attacks of all variations of the occupancy attack maps or till failure
-        for (index = 0, fail = 0; fail != 1 && index << occupancyIndicies; index++) {
+        for (index = 0, fail = 0; fail != 1 && index < occupancyIndicies; index++) {
             int magicIndex = (int)((occupancies[index] * magicNumber) >> (64 - relevantBits));
 
             //sets the used attack if its 0
@@ -504,19 +515,106 @@ map findMagicNumber(int square, int relevantBits, int bishop) {
                 fail = 1;
             }
         }
-        if (!fail) return magicNumber;
+        if (!fail) {
+            return magicNumber;
+        }
     }
 
     std::cout << "Magic Number fails\n";
     return 0ULL;
 }
 
-void initMagicNumbers() {
+//all pawn attacks 2 sides and 64 squares
+map pawnAttacks[2][64];
+
+map knightAttacks[64];
+
+map kingAttacks[64];
+
+/* max occupancies based on the highest relevant squares attacked 
+from any square which is 9 for bishops and 12 for rooks
+so the max occupancy would be 2^9 and 2^12 */
+
+//all bishop attacks 64 squares max 512 variations of occupancies
+map bishopAttacks[64][512];
+
+//all bishop attacks 64 squares max 4096 variations of occupancies
+map rookAttacks[64][4096];
+
+
+//pawns, knights, kings
+//can't be blocked by a piece from attacking a square
+void initJumpingPieceAttacks() {
+    //loop over squares on the board
     for (int i = 0; i < 64; i++) {
-        std::cout << "0x" << std::hex << findMagicNumber(i, relevantBishopBits[i], 1) << "ULL,\n";
+        pawnAttacks[0][i] = getPawnAttackMask(i, 0); //black pawns
+        pawnAttacks[1][i] = getPawnAttackMask(i, 1); //white pawns
+
+        knightAttacks[i] = getKnightAttackMask(i); //knights
+
+        kingAttacks[i] = getKingAttackMask(i); //king
     }
-    std::cout << "\n\n\n";
+}
+
+map bishopMasks[64];
+map rookMasks[64];
+
+//bishops, rooks, queens
+//can be blocked by a piece from attacking a square
+void initSlidingPieceAttack(int bishop) {
+    //loop over all board squares
+    for (int square = 0; square < 64; square++) {
+        bishopMasks[square] = getBishopAttackMask(square);
+        rookMasks[square] = getRookAttackMask(square);
+
+        map attackMask = bishop ? bishopMasks[square] : rookMasks[square];
+
+        int relevantBitCount = getBitCount(attackMask);
+
+        int occupancyIndicies = (1 << relevantBitCount);
+
+        for (int index = 0; index < occupancyIndicies; index++) {
+            if (bishop) {
+                map occupancy = setOccupancy(index, relevantBitCount, attackMask);
+                int magicIndex = (occupancy * bishopMagicNumbers[square]) >> (64 - relevantBitCount);
+                bishopAttacks[square][magicIndex] = getBishopAttackMaskWithBlockers(square, occupancy);
+            } else {
+                map occupancy = setOccupancy(index, relevantBitCount, attackMask);
+                int magicIndex = (occupancy * rookMagicNumbers[square]) >> (64 - relevantBitCount);
+                rookAttacks[square][magicIndex] = getRookAttackMaskWithBlockers(square, occupancy);
+            }
+        }
+    }
+}
+
+map getBishopAttacks(int square, map occupancy) {
+    occupancy &= bishopMasks[square];
+    occupancy *= bishopMagicNumbers[square];
+    occupancy >>= (64 - relevantBishopBits[square]);
+
+    return bishopAttacks[square][occupancy];
+}
+
+map getRookAttacks(int square, map occupancy) {
+    occupancy &= rookMasks[square];
+    occupancy *= rookMagicNumbers[square];
+    occupancy >>= (64 - relevantRookBits[square]);
+
+    return rookAttacks[square][occupancy];
+}
+
+map getQueenAttacks(int square, map occupancy) {
+    return getBishopAttacks(square, occupancy) ^ getRookAttacks(square, occupancy);
+}
+
+
+void initMagicNumbers() {
+    std::cout << "ROOKS\n\n\n";
     for (int i = 0; i < 64; i++) {
         std::cout << "0x" << std::hex << findMagicNumber(i, relevantRookBits[i], 0) << "ULL,\n";
+    }
+    std::cout << "\n\n BISHOPS \n\n\n";
+    for (int i = 0; i < 64; i++) {
+        std::cout << "0x" << std::hex << findMagicNumber(i, relevantBishopBits[i], 1) << "ULL,\n";
     }
 }
