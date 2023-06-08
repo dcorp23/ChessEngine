@@ -13,6 +13,7 @@ class MoveGenerator {
             moveCount++;
         }
 
+        //everything outside this is set seperately for special moves
         moveCode createMove(int startSquare, int endSquare, int piece, int capture) {
             moveCode move;
             move.startSquare = startSquare;
@@ -106,7 +107,7 @@ class MoveGenerator {
         }
 
         //piece 1-6: pawn, bishops, knights, rooks, queens, kings
-        bool isCheck(int square, int piece, Board board) {
+        int isCheck(int square, int piece, Board board) {
             map attack;
             map king = board.state.whiteToMove ? board.BKing : board.WKing;
             switch (piece)
@@ -133,8 +134,8 @@ class MoveGenerator {
                 break;
             }
 
-            if (attack & (king)) return true;
-            return false;
+            if (attack & king) return 1;
+            return 0;
         }
 
     public:
@@ -146,26 +147,65 @@ class MoveGenerator {
 
             map beforeMove;
             map afterMove;
+            map attackMask;
+
+            moveCode move;
             
             if (board.state.whiteToMove) {
                 beforeMove = board.WPawn;
                 afterMove = board.WPawn >> 8;
-                for (int i = 0; i < getBitCount(board.WPawn); i++) {
+                for (int pawns = 0; pawns < getBitCount(board.WPawn); pawns++) {
                     int startSquare = getLSBIndex(beforeMove);
                     beforeMove = popLSB(beforeMove);
                     
+                    //check for captures
+                    attackMask = attackTable.getPawnAttacks(startSquare, 1);
+                    for (int i = 0; i < getBitCount(attackMask); i++) {
+                        int attackSquare = getLSBIndex(attackMask);
+                        attackMask = popLSB(attackMask);
+
+                        //check for normal captures
+                        if ((1ULL << attackSquare) & board.Black) {
+                            move = createMove(startSquare, attackSquare, 0, 1);
+                            if(attackSquare < 8) { //promotions
+                                for (int i = 1; i < 5; i++) {
+                                    move.promotion = i;
+                                    addMove(move);
+                                }
+                            } else { //not a promotion
+                                addMove(move);
+                            }
+                        }
+                        //check for enpassant
+                        if (attackSquare = board.state.enPassant) {
+                            move = createMove(startSquare, attackSquare, 0, 1);
+                            move.enPassantFlag = 1;
+                            addMove(move);
+                        }
+                    }
+
                     //check if it can move forward 1 square
-                    map afterMove = (1ULL << startSquare) >> 8;
+                    afterMove = (1ULL << startSquare) >> 8;
                     if ((afterMove & board.All) != 0ULL) continue;
                     int endSquare = getLSBIndex(afterMove);
-                    addMove(createMove(startSquare, endSquare, 0, 0));
+                    move = createMove(startSquare, endSquare, 0, 0);
+                    if(endSquare < a7) { //promotions
+                        for (int i = 1; i < 5; i++) {
+                            move.promotion = i;
+                            addMove(move);
+                        }
+                    } else { //not a promotion
+                        addMove(move);
+                    }
 
                     //check if it can move forware 2 squares
                     if (beforeMove & rank2) continue;
                     afterMove = (1ULL << startSquare) >> 16;
                     if ((afterMove & board.All) != 0ULL) continue;
                     endSquare = getLSBIndex(afterMove);
-                    addMove(createMove(startSquare, endSquare, 0, 0));
+                    move = createMove(startSquare, endSquare, 0, 0);
+                    move.enPassantSquare = endSquare - 8;
+                    addMove(move);
                 }
             }
             else {
@@ -173,18 +213,54 @@ class MoveGenerator {
                     int startSquare = getLSBIndex(beforeMove);
                     beforeMove = popLSB(beforeMove);
                     
+                    //check for captures
+                    attackMask = attackTable.getPawnAttacks(startSquare, 0);
+                    for (int i = 0; i < getBitCount(attackMask); i++) {
+                        int attackSquare = getLSBIndex(attackMask);
+                        attackMask = popLSB(attackMask);
+
+                        //check for normal captures
+                        if ((1ULL << attackSquare) & board.White) {
+                            move = createMove(startSquare, attackSquare, 0, 1);
+                            if(attackSquare > h2) { //promotions
+                                for (int i = 1; i < 5; i++) {
+                                    move.promotion = i;
+                                    addMove(move);
+                                }
+                            } else { //not a promotion
+                                addMove(move);
+                            }
+                        }
+                        //check for enpassant
+                        if (attackSquare = board.state.enPassant) {
+                            move = createMove(startSquare, attackSquare, 0, 1);
+                            move.enPassantFlag = 1;
+                            addMove(move);
+                        }
+                    }
+
                     //check if it can move forward 1 square
-                    map afterMove = (1ULL << startSquare) << 8;
+                    afterMove = (1ULL << startSquare) << 8;
                     if ((afterMove & board.All) != 0ULL) continue;
                     int endSquare = getLSBIndex(afterMove);
-                    addMove(createMove(startSquare, endSquare, 0, 0));
+                    move = createMove(startSquare, endSquare, 0, 0);
+                    if(endSquare > h2) { //promotions
+                        for (int i = 1; i < 5; i++) {
+                            move.promotion = i;
+                            addMove(move);
+                        }
+                    } else { //not a promotion
+                        addMove(move);
+                    }
 
                     //check if it can move forware 2 squares
                     if (beforeMove & rank7) continue;
                     afterMove = (1ULL << startSquare) << 16;
                     if ((afterMove & board.All) != 0ULL) continue;
                     endSquare = getLSBIndex(afterMove);
-                    addMove(createMove(startSquare, endSquare, 0, 0));
+                    move = createMove(startSquare, endSquare, 0, 0);
+                    move.enPassantSquare = endSquare + 8;
+                    addMove(move);
                 }
             }
         }

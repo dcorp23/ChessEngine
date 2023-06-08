@@ -48,14 +48,15 @@ void printMap(map printingMap) {
 
 //starting is 0x01;
 struct boardState {
-    unsigned char whiteToMove : 1;
-    unsigned char whiteShortCastle : 1;
-    unsigned char whiteLongCastle : 1;
-    unsigned char blackShortCastle : 1; 
-    unsigned char blackLongCastle : 1;
-    unsigned char enPassant : 1;
-    unsigned char check : 1;
-    unsigned char checkMate: 1;
+    unsigned short whiteToMove : 1;
+    unsigned short whiteShortCastle : 1;
+    unsigned short whiteLongCastle : 1;
+    unsigned short blackShortCastle : 1; 
+    unsigned short blackLongCastle : 1;
+    unsigned short enPassant : 6; //square that is enPassant able
+                                //0 is no enpassant because you can't enpassant on a8 anyway
+    unsigned short check : 1;
+    unsigned short checkMate: 1;
 };
 
 //piece 0-5 pawn bishop knight rook queen king
@@ -64,13 +65,14 @@ struct moveCode {
     unsigned int endSquare : 6;
     unsigned int piece: 3;
     unsigned int capture: 1;
-    unsigned int check: 1;
-    unsigned int promotion: 3;
+    unsigned int promotion: 3; //piece promoting to same numbers as piece
     unsigned int whiteLong: 1;
     unsigned int whiteShort: 1;
     unsigned int blackLong: 1;
     unsigned int blackShort: 1;
-    unsigned int enPassant: 1;
+    unsigned int enPassantSquare: 6; //square that is enPassant able when moving double
+                            //0 is no enpassant because you can't enpassant on a8 anyway
+    unsigned int enPassantFlag: 1; //if the move was enPassant
 };
 
 struct Board {
@@ -189,7 +191,11 @@ struct Board {
             pieceMap ^= moveMask;
         }
         boardState newState = state;
+        newState.enPassant = code.enPassantSquare;
         newState.whiteToMove = !newState.whiteToMove;
+        
+        //TODO check if the move set the check flag
+
         return Board(code.piece, state.whiteToMove, pieceMap, this, newState);
     };
 
