@@ -1,16 +1,25 @@
+#include <iostream>
 #include "attackTables.cpp"
 #include "chessBoard.cpp"
-
 
 class MoveGenerator {
     private: 
         AttackTables attackTable = AttackTables();
-        moveCode moveList[256];
-        int moveCount;
+        moveCode moveList[256] = {};
+        int moveCount = 0;
 
         void addMove(moveCode move) {
             moveList[moveCount] = move;
             moveCount++;
+        }
+
+        moveCode createMove(int startSquare, int endSquare, int piece, int capture) {
+            moveCode move;
+            move.startSquare = startSquare;
+            move.endSquare = endSquare;
+            move.piece = piece;
+            move.capture = capture;
+            return move;
         }
 
         bool isSquareAttacked(int square, int side, Board board) {
@@ -91,6 +100,9 @@ class MoveGenerator {
                     popLSB(current);
                 }
             }
+
+            if (attackedMask & isAttacked) return true;
+            return false;
         }
 
         //piece 1-6: pawn, bishops, knights, rooks, queens, kings
@@ -132,23 +144,49 @@ class MoveGenerator {
             map rank2 = 0x000000000000FF00;
             map rank7 = 0x00FF000000000000;
 
+            map beforeMove;
+            map afterMove;
+            
             if (board.state.whiteToMove) {
+                beforeMove = board.WPawn;
+                afterMove = board.WPawn >> 8;
                 for (int i = 0; i < getBitCount(board.WPawn); i++) {
+                    int startSquare = getLSBIndex(beforeMove);
+                    beforeMove = popLSB(beforeMove);
+                    
+                    //check if it can move forward 1 square
+                    map afterMove = (1ULL << startSquare) >> 8;
+                    if ((afterMove & board.All) != 0ULL) continue;
+                    int endSquare = getLSBIndex(afterMove);
+                    addMove(createMove(startSquare, endSquare, 0, 0));
 
+                    //check if it can move forware 2 squares
+                    if (beforeMove & rank2) continue;
+                    afterMove = (1ULL << startSquare) >> 16;
+                    if ((afterMove & board.All) != 0ULL) continue;
+                    endSquare = getLSBIndex(afterMove);
+                    addMove(createMove(startSquare, endSquare, 0, 0));
                 }
             }
             else {
-                pawns = board.BPawn;
-                moves |= pawns << 8;
-                moves |= (pawns & rank7) << 16;
-            }
+                for (int i = 0; i < getBitCount(board.BPawn); i++) {
+                    int startSquare = getLSBIndex(beforeMove);
+                    beforeMove = popLSB(beforeMove);
+                    
+                    //check if it can move forward 1 square
+                    map afterMove = (1ULL << startSquare) << 8;
+                    if ((afterMove & board.All) != 0ULL) continue;
+                    int endSquare = getLSBIndex(afterMove);
+                    addMove(createMove(startSquare, endSquare, 0, 0));
 
-            int moveCount = getBitCount(moves);
-            for (int i = 0; i < moveCount; i++) {
-                
+                    //check if it can move forware 2 squares
+                    if (beforeMove & rank7) continue;
+                    afterMove = (1ULL << startSquare) << 16;
+                    if ((afterMove & board.All) != 0ULL) continue;
+                    endSquare = getLSBIndex(afterMove);
+                    addMove(createMove(startSquare, endSquare, 0, 0));
+                }
             }
-
-            return;
         }
 
         void getBishopMoves(Board board) {
@@ -215,6 +253,71 @@ class MoveGenerator {
 
             return;
         }
+
+        MoveGenerator() {};
+
+        void calculateAllMoves(Board board) {
+            getPawnMoves(board);
+        }
+
+        moveCode* getMoveList() {
+            return this->moveList;
+        }
+
+        int getMoveCount() {
+            return this->moveCount;
+        }
+};
+
+int main(void) {
+    std::cout << "hello" << '\n';
+    boardState startingState;
+    startingState.whiteToMove = 1;
+
+    Board board = Board(startingPawns, startingKnights, startingBishops, startingRooks, startingQueen, startingKing, 
+            startingPawns >> 40, startingKnights >> 56, startingBishops >> 56, startingRooks >> 56, startingQueen >> 56, startingKing >> 56,
+            startingState);
+
+    board.printBoard();
+
+    std::cout << '\n';
+
+    moveCode move;
+    move.startSquare = e2;
+    move.endSquare = e4;
+    move.piece = 0;
+
+    board = board.move(move);
+    board.printBoard();
+    std::cout << '\n';
+
+    move.startSquare = e7;
+    move.endSquare = e5;
+    move.piece = 0;
+
+    board = board.move(move);
+    board.printBoard();
+    std::cout << '\n';
+
+    std::cout << "hello" << '\n';
+
+    
+    static MoveGenerator moveGen = MoveGenerator();
+
+    moveGen.calculateAllMoves(board);
+
+    moveCode* moveList = moveGen.getMoveList();
+    int moveCount = moveGen.getMoveCount();
+
+    std::cout << moveCount << '\n';
+
+    for (int i = 0; i < moveCount; i++) {
+        Board newBoard = board.move(moveList[i]);
+        newBoard.printBoard();
+        std::cout << '\n';
+    }
+
+    return 0;
 };
 
 

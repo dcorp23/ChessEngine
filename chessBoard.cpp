@@ -16,6 +16,8 @@ map startingRooks = 0x8100000000000000;
 
 //board by chess notation
 //use this by: 1ULL << f1 which gives a bitboard with just f1
+#ifndef BOARDNOT
+#define BOARDNOT
 enum {
     a8, b8, c8, d8, e8, f8, g8, h8, 
     a7, b7, c7, d7, e7, f7, g7, h7, 
@@ -26,6 +28,7 @@ enum {
     a2, b2, c2, d2, e2, f2, g2, h2, 
     a1, b1, c1, d1, e1, f1, g1, h1
 };
+#endif //BOARDNOT
 
 enum {
     P, B, N, R, K, Q,
@@ -93,7 +96,7 @@ struct Board {
         Black(bp | bn | bb | br | bq | bk), 
         All(White | Black), 
         state(state), 
-        bitMaps({wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk})  
+        bitMaps{wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk}
     {};
 
     Board(int piece, int side, map newPieceMap, Board* board, boardState newState) {
@@ -222,7 +225,7 @@ struct Board {
     
 };
 
-int main(void) {
+/* int main(void) {
     boardState startingState;
     startingState.whiteToMove = 1;
 
@@ -258,4 +261,4 @@ int main(void) {
     board = board.move(move);
     board.printBoard();
     std::cout << '\n';
-}
+} */
