@@ -31,8 +31,8 @@ enum {
 #endif //BOARDNOT
 
 enum {
-    P, B, N, R, K, Q,
-    p, b, n, r, k, q
+    WPawn, WBishop, WKnight, WRook, WQueen, WKing, 
+    BPawn, BBishop, BKnight, BRook, BQueen, BKing
 };
 
 //print a single bit map in an 8x8 grid
@@ -80,11 +80,6 @@ struct Board {
     map Black;
     map All;
 
-    map WPawn; map WKnight; map WBishop; map WRook; 
-    map WQueen; map WKing;
-    map BPawn; map BKnight; map BBishop; map BRook; 
-    map BQueen; map BKing;
-
     map bitMaps[12];
 
     boardState state;
@@ -92,8 +87,6 @@ struct Board {
     Board(
         map wp, map wn, map wb, map wr, map wq, map wk,
         map bp, map bn, map bb, map br, map bq, map bk, boardState state) :
-        WPawn(wp), WKnight(wn), WBishop(wb), WRook(wr), WQueen(wq), WKing(wk),
-        BPawn(bp), BKnight(bn), BBishop(bb), BRook(br), BQueen(bq), BKing(bk), 
         White(wp | wn | wb | wr | wq | wk), 
         Black(bp | bn | bb | br | bq | bk), 
         All(White | Black), 
@@ -101,78 +94,24 @@ struct Board {
         bitMaps{wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk}
     {};
 
-    Board(int piece, int side, map newPieceMap, Board* board, boardState newState) {
-        WPawn = board->WPawn;
-        WBishop = board->WBishop;
-        WKnight = board->WKnight;
-        WRook = board->WRook;
-        WQueen = board->WQueen;
-        WKing = board->WKing;
-        BPawn = board->BPawn;
-        BBishop = board->BBishop;
-        BKnight = board->BKnight;
-        BRook = board->BRook;
-        BQueen = board->BQueen;
-        BKing = board->BKing;
-
-        switch (piece + (!side ? 6 : 0))
-        {
-        case 0:
-            WPawn = newPieceMap;
-            break;
-        case 1:
-            WBishop = newPieceMap;
-            break;
-        case 2:
-            WKnight = newPieceMap;
-            break;
-        case 3:
-            WRook = newPieceMap;
-            break;
-        case 4:
-            WQueen = newPieceMap;
-            break;
-        case 5:
-            WKing = newPieceMap;
-            break;
-        case 6:
-            BPawn = newPieceMap;
-            break;
-        case 7:
-            BBishop = newPieceMap;
-            break;
-        case 8:
-            BKnight = newPieceMap;
-            break;
-        case 9:
-            BRook = newPieceMap;
-            break;
-        case 10:
-            BQueen = newPieceMap;
-            break;
-        case 11:
-            BKing = newPieceMap;
-            break;
-        default:
-            break;
+    Board(int piece, int side, map newPieceMap, int secondPiece, map secondPieceMap, Board* board, boardState newState) {
+        for (int i = WPawn; i <= BKing; i++) {
+            bitMaps[i] = board->bitMaps[i];
         }
 
-        White = WPawn | WBishop | WKnight | WRook | WQueen | WKing;
-        Black = BPawn | BBishop | BKnight | BRook | BQueen | BKing;
-        All = White | Black;
-        bitMaps[0] = WPawn;
-        bitMaps[1] = WBishop;
-        bitMaps[2] = WKnight;
-        bitMaps[3] = WRook;
-        bitMaps[4] = WQueen;
-        bitMaps[5] = WKing;
-        bitMaps[6] = BPawn;
-        bitMaps[7] = BBishop;
-        bitMaps[8] = BKnight;
-        bitMaps[9] = BRook;
-        bitMaps[10] = BQueen;
-        bitMaps[11] = BKing;
+        bitMaps[piece + (side ? 0 : 6)] = newPieceMap;
+        if (secondPieceMap != 0ULL) bitMaps[secondPiece] = secondPieceMap;
 
+        White = 0ULL;
+        Black = 0ULL;
+        for (int i = WPawn; i <= WKing; i++) {
+            White |= bitMaps[i];
+        }
+        for (int i = BPawn; i <= BKing; i++) {
+            Black |= bitMaps[i];
+        }
+        All = White | Black;
+        
         state = newState;
     }
 
@@ -180,8 +119,9 @@ struct Board {
         map moveMask = 0ULL;
         moveMask |= (1ULL << code.startSquare);
         moveMask |= (1ULL << code.endSquare);
+        //map with piece in updated square
         map pieceMap;
-        //check for captures
+        
         if (state.whiteToMove) {
             pieceMap = bitMaps[code.piece];
             pieceMap ^= moveMask;
@@ -190,36 +130,81 @@ struct Board {
             pieceMap = bitMaps[code.piece + 6];
             pieceMap ^= moveMask;
         }
+
         boardState newState = state;
         newState.enPassant = code.enPassantSquare;
         newState.whiteToMove = !newState.whiteToMove;
-        
-        //TODO check if the move set the check flag
 
-        return Board(code.piece, state.whiteToMove, pieceMap, this, newState);
+        if(code.enPassantFlag) {
+            map captureMap = (1ULL << (state.enPassant + (state.whiteToMove ? 8 : -8)));
+            captureMap ^= bitMaps[0 + (state.whiteToMove ? 6 : 0)];
+
+            return Board(code.piece, state.whiteToMove, pieceMap, 0 + (state.whiteToMove ? 6 : 0), captureMap, this, newState);
+        }
+
+        //check for captures
+        if (code.capture) {
+            map captureMap = 1ULL << code.endSquare;
+
+            int startPiece = state.whiteToMove ? 6 : 0;
+            int endPiece = state.whiteToMove ? 12 : 6;
+            int secondPiece = 0;
+            for (int i = startPiece; i < endPiece; i++) {
+                if (captureMap & bitMaps[i]) {
+                    captureMap ^= bitMaps[i];
+                    secondPiece = i;
+                }
+            }
+
+            return Board(code.piece, state.whiteToMove, pieceMap, secondPiece,captureMap, this, newState);
+        }
+
+        //long castle
+        if (code.blackLong || code.whiteLong) {
+            map rookMap = 1ULL << (code.whiteLong ? a1 : a8);
+            rookMap |= 1ULL << (code.whiteLong ? d1 : d8);
+
+            rookMap ^= bitMaps[3 + (code.whiteLong ? 0 : 6)];
+
+            return Board(code.piece, state.whiteToMove, pieceMap, 3 + (code.whiteLong ? 0 : 6), rookMap, this, newState);
+        }
+
+        //short castle
+        if (code.blackShort || code.whiteShort) {
+            map rookMap = (1ULL << code.whiteLong ? h1 : h8);
+            rookMap |= (1ULL << code.whiteLong ? f1 : f8);
+
+            rookMap ^= bitMaps[3 + (code.whiteLong ? 0 : 6)];
+
+            return Board(code.piece, state.whiteToMove, pieceMap, 3 + (code.whiteLong ? 0 : 6), rookMap, this, newState);
+        }
+        
+        //quiet moves
+        return Board(code.piece, state.whiteToMove, pieceMap, 0, 0ULL, this, newState);
     };
 
     void printBoard() {
         map currentBit;
+
         for (int rank = 0; rank < 8; rank++) {
             for (int file = 0; file < 8; file++) {
                 currentBit = (1ULL << ((rank * 8) + file));
 
                 if (currentBit & All) {
                     if (currentBit & White) {
-                        if (currentBit & WPawn) std::cout << " 1";
-                        if (currentBit & WKnight) std::cout << " 2";
-                        if (currentBit & WBishop) std::cout << " 3";
-                        if (currentBit & WRook) std::cout << " 4";
-                        if (currentBit & WQueen) std::cout << " 5";
-                        if (currentBit & WKing) std::cout << " 9";
+                        if (currentBit & bitMaps[WPawn]) std::cout << " 1";
+                        if (currentBit & bitMaps[WKnight]) std::cout << " 2";
+                        if (currentBit & bitMaps[WBishop]) std::cout << " 3";
+                        if (currentBit & bitMaps[WRook]) std::cout << " 4";
+                        if (currentBit & bitMaps[WQueen]) std::cout << " 5";
+                        if (currentBit & bitMaps[WKing]) std::cout << " 9";
                     } else {
-                        if (currentBit & BPawn) std::cout << "-1";
-                        if (currentBit & BKnight) std::cout << "-2";
-                        if (currentBit & BBishop) std::cout << "-3";
-                        if (currentBit & BRook) std::cout << "-4";
-                        if (currentBit & BQueen) std::cout << "-5";
-                        if (currentBit & BKing) std::cout << "-9";
+                        if (currentBit & bitMaps[BPawn]) std::cout << "-1";
+                        if (currentBit & bitMaps[BKnight]) std::cout << "-2";
+                        if (currentBit & bitMaps[BBishop]) std::cout << "-3";
+                        if (currentBit & bitMaps[BRook]) std::cout << "-4";
+                        if (currentBit & bitMaps[BQueen]) std::cout << "-5";
+                        if (currentBit & bitMaps[BKing]) std::cout << "-9";
                     }
                 } else {
                     std::cout << " 0";

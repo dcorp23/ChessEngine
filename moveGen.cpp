@@ -29,76 +29,20 @@ class MoveGenerator {
             map occupancy = board.All;
             map isAttacked = 1ULL << square;
             if (side) {
-                current = board.BPawn;
-                for (int i = 0; i < getBitCount(board.BPawn); i++) {
-                    attackedMask |= attackTable.getPawnAttacks(getLSBIndex(current), 0);
-                    popLSB(current);
-                }
-
-                current = board.BBishop;
-                for (int i = 0; i < getBitCount(board.BBishop); i++) {
-                    attackedMask |= attackTable.getBishopAttacks(getLSBIndex(current), occupancy);
-                    popLSB(current);
-                }
-
-                current = board.BKnight;
-                for (int i = 0; i < getBitCount(board.BKnight); i++) {
-                    attackedMask |= attackTable.getKnightAttacks(getLSBIndex(current));
-                    popLSB(current);
-                }
-
-                current = board.BRook;
-                for (int i = 0; i < getBitCount(board.BRook); i++) {
-                    attackedMask |= attackTable.getRookAttacks(getLSBIndex(current), occupancy);
-                    popLSB(current);
-                }
-
-                current = board.BQueen;
-                for (int i = 0; i < getBitCount(board.BQueen); i++) {
-                    attackedMask |= attackTable.getQueenAttacks(getLSBIndex(current), occupancy);
-                    popLSB(current);
-                }
-
-                current = board.BKing;
-                for (int i = 0; i < getBitCount(board.BKing); i++) {
-                    attackedMask |= attackTable.getKingAttacks(getLSBIndex(current));
-                    popLSB(current);
+                for (int i = WPawn; i <= WKing; i++) {
+                    current = board.bitMaps[i];
+                    for (int i = 0; i < getBitCount(board.bitMaps[i]); i++) {
+                        attackedMask |= attackTable.getPawnAttacks(getLSBIndex(current), 0);
+                        popLSB(current);
+                    }
                 }
             } else {
-                current = board.WPawn;
-                for (int i = 0; i < getBitCount(board.WPawn); i++) {
-                    attackedMask |= attackTable.getPawnAttacks(getLSBIndex(current), 0);
-                    popLSB(current);
-                }
-
-                current = board.WBishop;
-                for (int i = 0; i < getBitCount(board.WBishop); i++) {
-                    attackedMask |= attackTable.getBishopAttacks(getLSBIndex(current), occupancy);
-                    popLSB(current);
-                }
-
-                current = board.WKnight;
-                for (int i = 0; i < getBitCount(board.WKnight); i++) {
-                    attackedMask |= attackTable.getKnightAttacks(getLSBIndex(current));
-                    popLSB(current);
-                }
-
-                current = board.WRook;
-                for (int i = 0; i < getBitCount(board.WRook); i++) {
-                    attackedMask |= attackTable.getRookAttacks(getLSBIndex(current), occupancy);
-                    popLSB(current);
-                }
-
-                current = board.WQueen;
-                for (int i = 0; i < getBitCount(board.WQueen); i++) {
-                    attackedMask |= attackTable.getQueenAttacks(getLSBIndex(current), occupancy);
-                    popLSB(current);
-                }
-
-                current = board.WKing;
-                for (int i = 0; i < getBitCount(board.WKing); i++) {
-                    attackedMask |= attackTable.getKingAttacks(getLSBIndex(current));
-                    popLSB(current);
+                for (int i = BPawn; i <= BKing; i++) {
+                    current = board.bitMaps[i];
+                    for (int i = 0; i < getBitCount(board.bitMaps[i]); i++) {
+                        attackedMask |= attackTable.getPawnAttacks(getLSBIndex(current), 0);
+                        popLSB(current);
+                    }
                 }
             }
 
@@ -109,7 +53,7 @@ class MoveGenerator {
         //piece 1-6: pawn, bishops, knights, rooks, queens, kings
         int isCheck(int square, int piece, Board board) {
             map attack;
-            map king = board.state.whiteToMove ? board.BKing : board.WKing;
+            map king = board.bitMaps[5 + (board.state.whiteToMove ? 0 : 6)];
             switch (piece)
             {
             case 1:
@@ -149,18 +93,19 @@ class MoveGenerator {
             map afterMove;
             map attackMask;
 
+            int attackMaskBitCount;
             moveCode move;
             
             if (board.state.whiteToMove) {
-                beforeMove = board.WPawn;
-                afterMove = board.WPawn >> 8;
-                for (int pawns = 0; pawns < getBitCount(board.WPawn); pawns++) {
+                beforeMove = board.bitMaps[WPawn];
+                for (int pawns = 0; pawns < getBitCount(board.bitMaps[WPawn]); pawns++) {
                     int startSquare = getLSBIndex(beforeMove);
                     beforeMove = popLSB(beforeMove);
                     
                     //check for captures
                     attackMask = attackTable.getPawnAttacks(startSquare, 1);
-                    for (int i = 0; i < getBitCount(attackMask); i++) {
+                    attackMaskBitCount = getBitCount(attackMask);
+                    for (int i = 0; i < attackMaskBitCount; i++) {
                         int attackSquare = getLSBIndex(attackMask);
                         attackMask = popLSB(attackMask);
 
@@ -177,7 +122,7 @@ class MoveGenerator {
                             }
                         }
                         //check for enpassant
-                        if (attackSquare = board.state.enPassant) {
+                        if (attackSquare == board.state.enPassant) {
                             move = createMove(startSquare, attackSquare, 0, 1);
                             move.enPassantFlag = 1;
                             addMove(move);
@@ -209,13 +154,15 @@ class MoveGenerator {
                 }
             }
             else {
-                for (int i = 0; i < getBitCount(board.BPawn); i++) {
+                beforeMove = board.bitMaps[BPawn];
+                for (int i = 0; i < getBitCount(board.bitMaps[BPawn]); i++) {
                     int startSquare = getLSBIndex(beforeMove);
                     beforeMove = popLSB(beforeMove);
-                    
+
                     //check for captures
                     attackMask = attackTable.getPawnAttacks(startSquare, 0);
-                    for (int i = 0; i < getBitCount(attackMask); i++) {
+                    attackMaskBitCount = getBitCount(attackMask);
+                    for (int i = 0; i < attackMaskBitCount; i++) {
                         int attackSquare = getLSBIndex(attackMask);
                         attackMask = popLSB(attackMask);
 
@@ -232,7 +179,7 @@ class MoveGenerator {
                             }
                         }
                         //check for enpassant
-                        if (attackSquare = board.state.enPassant) {
+                        if (attackSquare == board.state.enPassant) {
                             move = createMove(startSquare, attackSquare, 0, 1);
                             move.enPassantFlag = 1;
                             addMove(move);
@@ -269,10 +216,10 @@ class MoveGenerator {
             map bishops;
 
             if (board.state.whiteToMove) {
-                bishops = board.WBishop;
+                bishops = board.bitMaps[WBishop];
             }
             else {
-                bishops = board.BBishop;
+                bishops = board.bitMaps[BBishop];
             }
 
             return;
@@ -282,10 +229,10 @@ class MoveGenerator {
             map knights;
 
             if (board.state.whiteToMove) {
-                knights = board.WKnight;
+                knights = board.bitMaps[WKnight];
             }
             else {
-                knights = board.BKnight;
+                knights = board.bitMaps[BKnight];
             }
 
             return;
@@ -295,10 +242,10 @@ class MoveGenerator {
             map rooks;
 
             if (board.state.whiteToMove) {
-                rooks = board.WRook;
+                rooks = board.bitMaps[WRook];
             }
             else {
-                rooks = board.BRook;
+                rooks = board.bitMaps[BRook];
             }
 
             return;
@@ -308,10 +255,10 @@ class MoveGenerator {
             map queens;
 
             if (board.state.whiteToMove) {
-                queens = board.WQueen;
+                queens = board.bitMaps[WQueen];
             }
             else {
-                queens = board.BQueen;
+                queens = board.bitMaps[BQueen];
             }
 
             return;
@@ -321,10 +268,10 @@ class MoveGenerator {
             map king;
 
             if (board.state.whiteToMove) {
-                king = board.WKing;
+                king = board.bitMaps[WKing];
             }
             else {
-                king = board.BKing;
+                king = board.bitMaps[BKing];
             }
 
             return;
@@ -359,8 +306,8 @@ int main(void) {
     std::cout << '\n';
 
     moveCode move;
-    move.startSquare = e2;
-    move.endSquare = e4;
+    move.startSquare = d2;
+    move.endSquare = d4;
     move.piece = 0;
 
     board = board.move(move);
@@ -375,7 +322,34 @@ int main(void) {
     board.printBoard();
     std::cout << '\n';
 
+    move.startSquare = d4;
+    move.endSquare = d5;
+    move.piece = 0;
+
+    board = board.move(move);
+    board.printBoard();
+    std::cout << '\n';
+
+    move.startSquare = e5;
+    move.endSquare = e4;
+    move.piece = 0;
+
+    board = board.move(move);
+    board.printBoard();
+    std::cout << '\n';
+
+    move.startSquare = f2;
+    move.endSquare = f4;
+    move.piece = 0;
+    move.enPassantSquare = f3;
+
+    board = board.move(move);
+    board.printBoard();
+    std::cout << '\n';
+
     std::cout << "hello" << '\n';
+
+    std::cout << board.state.enPassant << '\n';
 
     
     static MoveGenerator moveGen = MoveGenerator();
