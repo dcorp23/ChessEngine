@@ -225,17 +225,39 @@ class MoveGenerator {
             return;
         }
 
-        void getKnightsMoves(Board board) {
-            map knights;
+        void getKnightMoves(Board board) {
+            map beforeMove;
+            map attackMask;
+            map afterMove;
+            map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
+            map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
+            moveCode move;
 
-            if (board.state.whiteToMove) {
-                knights = board.bitMaps[WKnight];
-            }
-            else {
-                knights = board.bitMaps[BKnight];
-            }
+            beforeMove = board.bitMaps[board.state.whiteToMove ? WKnight : BKnight];
+            //loop through each knight
+            for (int i = 0; i < getBitCount(board.bitMaps[board.state.whiteToMove ? WKnight : BKnight]); i++) {
+                int startSquare = getLSBIndex(beforeMove);
+                beforeMove = popLSB(beforeMove);
 
-            return;
+                //get all moves for the knight 
+                attackMask = attackTable.getKnightAttacks(startSquare);
+                int attackMaskBitCount = getBitCount(attackMask);
+
+                //loop through each square
+                for (int j = 0; j < attackMaskBitCount; j++) {
+                    int endSquare = getLSBIndex(attackMask);
+                    attackMask = popLSB(attackMask);
+
+                    if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
+                    if (enemyPieces & (1ULL << endSquare)) { //check for captures
+                        move = createMove(startSquare, endSquare, 2, 1);
+                        addMove(move);
+                        continue;
+                    }
+                    move = createMove(startSquare, endSquare, 2, 0); //quite moves
+                    addMove(move);
+                }
+            }
         }
 
         void getRookMoves(Board board) {
@@ -281,6 +303,7 @@ class MoveGenerator {
 
         void calculateAllMoves(Board board) {
             getPawnMoves(board);
+            getKnightMoves(board);
         }
 
         moveCode* getMoveList() {
@@ -306,8 +329,8 @@ int main(void) {
     std::cout << '\n';
 
     moveCode move;
-    move.startSquare = d2;
-    move.endSquare = d4;
+    move.startSquare = c2;
+    move.endSquare = c4;
     move.piece = 0;
 
     board = board.move(move);
@@ -322,8 +345,8 @@ int main(void) {
     board.printBoard();
     std::cout << '\n';
 
-    move.startSquare = d4;
-    move.endSquare = d5;
+    move.startSquare = c4;
+    move.endSquare = c5;
     move.piece = 0;
 
     board = board.move(move);
@@ -338,19 +361,15 @@ int main(void) {
     board.printBoard();
     std::cout << '\n';
 
-    move.startSquare = f2;
-    move.endSquare = f4;
+    move.startSquare = c5;
+    move.endSquare = c6;
     move.piece = 0;
-    move.enPassantSquare = f3;
 
     board = board.move(move);
     board.printBoard();
     std::cout << '\n';
 
     std::cout << "hello" << '\n';
-
-    std::cout << board.state.enPassant << '\n';
-
     
     static MoveGenerator moveGen = MoveGenerator();
 

@@ -10,8 +10,8 @@ using std::string;
 map startingPawns = 0x00FF000000000000;
 map startingKing = 0x0800000000000000;
 map startingQueen = 0x1000000000000000;
-map startingBishops = 0x2400000000000000;
-map startingKnights = 0x4200000000000000;
+map startingBishops = 0x4200000000000000;
+map startingKnights = 0x2400000000000000;
 map startingRooks = 0x8100000000000000;
 
 //board by chess notation
@@ -215,41 +215,3 @@ struct Board {
     };
     
 };
-
-/* int main(void) {
-    boardState startingState;
-    startingState.whiteToMove = 1;
-
-    Board board = Board(startingPawns, startingKnights, startingBishops, startingRooks, startingQueen, startingKing, 
-            startingPawns >> 40, startingKnights >> 56, startingBishops >> 56, startingRooks >> 56, startingQueen >> 56, startingKing >> 56,
-            startingState);
-
-    board.printBoard();
-
-    std::cout << '\n';
-
-    moveCode move;
-    move.startSquare = e2;
-    move.endSquare = e4;
-    move.piece = 0;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-
-    move.startSquare = e7;
-    move.endSquare = e5;
-    move.piece = 0;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-
-    move.startSquare = f1;
-    move.endSquare = c4;
-    move.piece = 1;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-} */
