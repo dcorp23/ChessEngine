@@ -213,16 +213,38 @@ class MoveGenerator {
         }
 
         void getBishopMoves(Board board) {
-            map bishops;
+            map beforeMove;
+            map attackMask;
+            map afterMove;
+            map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
+            map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
+            moveCode move;
 
-            if (board.state.whiteToMove) {
-                bishops = board.bitMaps[WBishop];
-            }
-            else {
-                bishops = board.bitMaps[BBishop];
-            }
+            beforeMove = board.bitMaps[board.state.whiteToMove ? WBishop: BBishop];
+            //loop through each Bishop
+            for (int i = 0; i < getBitCount(board.bitMaps[board.state.whiteToMove ? WBishop : BBishop]); i++) {
+                int startSquare = getLSBIndex(beforeMove);
+                beforeMove = popLSB(beforeMove);
 
-            return;
+                //get all moves for the Bishop
+                attackMask = attackTable.getBishopAttacks(startSquare, board.All);
+                int attackMaskBitCount = getBitCount(attackMask);
+
+                //loop through each square
+                for (int j = 0; j < attackMaskBitCount; j++) {
+                    int endSquare = getLSBIndex(attackMask);
+                    attackMask = popLSB(attackMask);
+
+                    if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
+                    if (enemyPieces & (1ULL << endSquare)) { //check for captures
+                        move = createMove(startSquare, endSquare, 1, 1);
+                        addMove(move);
+                        continue;
+                    }
+                    move = createMove(startSquare, endSquare, 1, 0); //quite moves
+                    addMove(move);
+                }
+            }
         }
 
         void getKnightMoves(Board board) {
@@ -261,42 +283,105 @@ class MoveGenerator {
         }
 
         void getRookMoves(Board board) {
-            map rooks;
+            map beforeMove;
+            map attackMask;
+            map afterMove;
+            map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
+            map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
+            moveCode move;
 
-            if (board.state.whiteToMove) {
-                rooks = board.bitMaps[WRook];
-            }
-            else {
-                rooks = board.bitMaps[BRook];
-            }
+            beforeMove = board.bitMaps[board.state.whiteToMove ? WRook: BRook];
+            //loop through each Rook
+            for (int i = 0; i < getBitCount(board.bitMaps[board.state.whiteToMove ? WRook : BRook]); i++) {
+                int startSquare = getLSBIndex(beforeMove);
+                beforeMove = popLSB(beforeMove);
 
-            return;
+                //get all moves for the Rook
+                attackMask = attackTable.getRookAttacks(startSquare, board.All);
+                int attackMaskBitCount = getBitCount(attackMask);
+
+                //loop through each square
+                for (int j = 0; j < attackMaskBitCount; j++) {
+                    int endSquare = getLSBIndex(attackMask);
+                    attackMask = popLSB(attackMask);
+
+                    if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
+                    if (enemyPieces & (1ULL << endSquare)) { //check for captures
+                        move = createMove(startSquare, endSquare, 2, 1);
+                        addMove(move);
+                        continue;
+                    }
+                    move = createMove(startSquare, endSquare, 2, 0); //quite moves
+                    addMove(move);
+                }
+            }
         }
 
         void getQueenMoves(Board board) {
-            map queens;
+            map beforeMove;
+            map attackMask;
+            map afterMove;
+            map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
+            map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
+            moveCode move;
 
-            if (board.state.whiteToMove) {
-                queens = board.bitMaps[WQueen];
-            }
-            else {
-                queens = board.bitMaps[BQueen];
-            }
+            beforeMove = board.bitMaps[board.state.whiteToMove ? WQueen: BQueen];
+            //loop through each Queen
+            for (int i = 0; i < getBitCount(board.bitMaps[board.state.whiteToMove ? WQueen : BQueen]); i++) {
+                int startSquare = getLSBIndex(beforeMove);
+                beforeMove = popLSB(beforeMove);
 
-            return;
+                //get all moves for the Queen
+                attackMask = attackTable.getQueenAttacks(startSquare, board.All);
+                int attackMaskBitCount = getBitCount(attackMask);
+
+                //loop through each move
+                for (int j = 0; j < attackMaskBitCount; j++) {
+                    int endSquare = getLSBIndex(attackMask);
+                    attackMask = popLSB(attackMask);
+
+                    if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
+                    if (enemyPieces & (1ULL << endSquare)) { //check for captures
+                        move = createMove(startSquare, endSquare, 4, 1);
+                        addMove(move);
+                        continue;
+                    }
+                    move = createMove(startSquare, endSquare, 4, 0); //quite moves
+                    addMove(move);
+                }
+            }
         }
 
         void getKingMoves(Board board) {
-            map king;
+            map beforeMove;
+            map attackMask;
+            map afterMove;
+            map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
+            map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
+            moveCode move;
 
-            if (board.state.whiteToMove) {
-                king = board.bitMaps[WKing];
-            }
-            else {
-                king = board.bitMaps[BKing];
-            }
+            beforeMove = board.bitMaps[board.state.whiteToMove ? WKing: BKing];
+            int startSquare = getLSBIndex(beforeMove);
+            beforeMove = popLSB(beforeMove);
 
-            return;
+            //get all moves for the King
+            attackMask = attackTable.getKingAttacks(startSquare);
+            int attackMaskBitCount = getBitCount(attackMask);
+
+            //loop through each square
+            for (int j = 0; j < attackMaskBitCount; j++) {
+                int endSquare = getLSBIndex(attackMask);
+                attackMask = popLSB(attackMask);
+
+                if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
+                if (enemyPieces & (1ULL << endSquare)) { //check for captures
+                    move = createMove(startSquare, endSquare, 5, 1);
+                    addMove(move);
+                    continue;
+                }
+                move = createMove(startSquare, endSquare, 5, 0); //quite moves
+                addMove(move);
+            }
         }
 
         MoveGenerator() {};
@@ -304,6 +389,10 @@ class MoveGenerator {
         void calculateAllMoves(Board board) {
             getPawnMoves(board);
             getKnightMoves(board);
+            getBishopMoves(board);
+            getRookMoves(board);
+            getQueenMoves(board);
+            getKingMoves(board);
         }
 
         moveCode* getMoveList() {

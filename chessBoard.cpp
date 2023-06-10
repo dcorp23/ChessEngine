@@ -192,19 +192,19 @@ struct Board {
 
                 if (currentBit & All) {
                     if (currentBit & White) {
-                        if (currentBit & bitMaps[WPawn]) std::cout << " 1";
-                        if (currentBit & bitMaps[WKnight]) std::cout << " 2";
-                        if (currentBit & bitMaps[WBishop]) std::cout << " 3";
-                        if (currentBit & bitMaps[WRook]) std::cout << " 4";
-                        if (currentBit & bitMaps[WQueen]) std::cout << " 5";
-                        if (currentBit & bitMaps[WKing]) std::cout << " 9";
+                        if (currentBit & bitMaps[WPawn]) std::cout << " P";
+                        if (currentBit & bitMaps[WKnight]) std::cout << " N";
+                        if (currentBit & bitMaps[WBishop]) std::cout << " B";
+                        if (currentBit & bitMaps[WRook]) std::cout << " R";
+                        if (currentBit & bitMaps[WQueen]) std::cout << " Q";
+                        if (currentBit & bitMaps[WKing]) std::cout << " K";
                     } else {
-                        if (currentBit & bitMaps[BPawn]) std::cout << "-1";
-                        if (currentBit & bitMaps[BKnight]) std::cout << "-2";
-                        if (currentBit & bitMaps[BBishop]) std::cout << "-3";
-                        if (currentBit & bitMaps[BRook]) std::cout << "-4";
-                        if (currentBit & bitMaps[BQueen]) std::cout << "-5";
-                        if (currentBit & bitMaps[BKing]) std::cout << "-9";
+                        if (currentBit & bitMaps[BPawn]) std::cout << " p";
+                        if (currentBit & bitMaps[BKnight]) std::cout << " n";
+                        if (currentBit & bitMaps[BBishop]) std::cout << " b";
+                        if (currentBit & bitMaps[BRook]) std::cout << " r";
+                        if (currentBit & bitMaps[BQueen]) std::cout << " q";
+                        if (currentBit & bitMaps[BKing]) std::cout << " k";
                     }
                 } else {
                     std::cout << " 0";
