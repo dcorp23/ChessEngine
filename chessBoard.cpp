@@ -84,6 +84,23 @@ struct Board {
 
     boardState state;
 
+    Board() {
+        for (int i = WPawn; i <= BKing; i++) {
+            bitMaps[i] = 0ULL;
+        }
+        White = 0ULL;
+        Black = 0ULL;
+        for (int i = WPawn; i <= WKing; i++) {
+            White |= bitMaps[i];
+        }
+        for (int i = BPawn; i <= BKing; i++) {
+            Black |= bitMaps[i];
+        }
+        All = 0ULL;
+        boardState newState = boardState();
+        state = newState;
+    }
+
     Board(
         map wp, map wn, map wb, map wr, map wq, map wk,
         map bp, map bn, map bb, map br, map bq, map bk, boardState state) :
@@ -213,5 +230,9 @@ struct Board {
             std::cout << '\n';
         }
     };
+
+    bool isEqual(Board board) {
+        return this->All == board.All;
+    }
     
 };

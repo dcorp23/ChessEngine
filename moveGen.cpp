@@ -23,26 +23,42 @@ class MoveGenerator {
             return move;
         }
 
-        bool isSquareAttacked(int square, int side, Board board) {
+        //check if a square is attacked by the side given
+        bool isSquareAttacked(int square, int side, Board board, map occupancy) {
             map attackedMask;
             map current;
-            map occupancy = board.All;
             map isAttacked = 1ULL << square;
-            if (side) {
-                for (int i = WPawn; i <= WKing; i++) {
-                    current = board.bitMaps[i];
-                    for (int i = 0; i < getBitCount(board.bitMaps[i]); i++) {
+
+            int startPiece = side ? WPawn : BPawn;
+            int endPiece = side ? WKing : BKing;
+
+            for (int i = startPiece; i <= endPiece; i++) {
+                current = board.bitMaps[i];
+                for (int j = 0; j < getBitCount(board.bitMaps[i]); j++) {
+                    switch (i % 6)
+                    {
+                    case 0:
                         attackedMask |= attackTable.getPawnAttacks(getLSBIndex(current), 0);
-                        popLSB(current);
+                        break;
+                    case 1:
+                        attackedMask |= attackTable.getBishopAttacks(getLSBIndex(current), occupancy);
+                        break;
+                    case 2:
+                        attackedMask |= attackTable.getKnightAttacks(getLSBIndex(current));
+                        break;
+                    case 3:
+                        attackedMask |= attackTable.getRookAttacks(getLSBIndex(current), occupancy);
+                        break;
+                    case 4:
+                        attackedMask |= attackTable.getQueenAttacks(getLSBIndex(current), occupancy);
+                        break;
+                    case 5:
+                        attackedMask |= attackTable.getKingAttacks(getLSBIndex(current));
+                        break;
+                    default:
+                        break;
                     }
-                }
-            } else {
-                for (int i = BPawn; i <= BKing; i++) {
-                    current = board.bitMaps[i];
-                    for (int i = 0; i < getBitCount(board.bitMaps[i]); i++) {
-                        attackedMask |= attackTable.getPawnAttacks(getLSBIndex(current), 0);
-                        popLSB(current);
-                    }
+                    current = popLSB(current);
                 }
             }
 
@@ -50,36 +66,16 @@ class MoveGenerator {
             return false;
         }
 
-        //piece 1-6: pawn, bishops, knights, rooks, queens, kings
-        int isCheck(int square, int piece, Board board) {
-            map attack;
-            map king = board.bitMaps[5 + (board.state.whiteToMove ? 0 : 6)];
-            switch (piece)
-            {
-            case 1:
-                attack = attackTable.getPawnAttacks(square, board.state.whiteToMove);
-                break;
-            case 2:
-                attack = attackTable.getBishopAttacks(square, board.All);
-                break;
-            case 3: 
-                attack = attackTable.getKnightAttacks(square);
-                break;
-            case 4:
-                attack = attackTable.getRookAttacks(square, board.All);
-                break;
-            case 5:
-                attack = attackTable.getQueenAttacks(square, board.All);
-                break;
-            case 6: 
-                attack = attackTable.getKingAttacks(square);
-            default:
-                std::cout << "Piece is invalid";
-                break;
-            }
+        bool isBoardValid(Board board) {
+            map king = board.bitMaps[board.state.whiteToMove ? 11 : 5];
+            int kingSquare = getLSBIndex(king);
+            return !(isSquareAttacked(kingSquare, board.state.whiteToMove, board, board.All));
+        }
 
-            if (attack & king) return 1;
-            return 0;
+        bool isBoardCheck(Board board) {
+            map king = board.bitMaps[board.state.whiteToMove ? 5 : 11];
+            int kingSquare = getLSBIndex(king);
+            return isSquareAttacked(kingSquare, !board.state.whiteToMove, board, board.All);
         }
 
     public:
@@ -395,12 +391,61 @@ class MoveGenerator {
             getKingMoves(board);
         }
 
+        Board* validateAllMoves(Board board) {
+            int boardCount = 0;
+            Board* validBoards = new Board[moveCount + 1];
+            for (int i = 0; i < moveCount; i++) {
+                validBoards[i] = Board();
+                Board newBoard = board.move(moveList[i]);
+                if (isBoardValid(newBoard)) {
+                    validBoards[boardCount] = newBoard;
+                    boardCount++;
+                }
+            }
+            validBoards[boardCount] = Board();
+            return validBoards;
+        }
+
+        bool isBoardCheckMate(Board board) {
+            calculateAllMoves(board);
+            Board* validBoards;
+            validBoards = validateAllMoves(board);
+            int boardIndex = 0;
+            while (!validBoards[boardIndex].isEqual(Board())) {
+                if (!isBoardCheck(validBoards[boardIndex])) {
+                    delete[] validBoards;
+                    return false;
+                }
+                boardIndex++;
+            }
+            delete[] validBoards;
+            return true;
+        }
+
         moveCode* getMoveList() {
             return this->moveList;
         }
 
         int getMoveCount() {
             return this->moveCount;
+        }
+
+        Board* getAllLegalBoards(Board board) {
+            calculateAllMoves(board);
+            Board* validBoards = validateAllMoves(board);
+            int boardIndex = 0;
+            while (!validBoards[boardIndex].isEqual(Board())) {
+                Board currentBoard = validBoards[boardIndex];
+                if (isBoardCheck(currentBoard)) {
+                    currentBoard.printBoard();
+                    currentBoard.state.check = 1;
+                    if (isBoardCheckMate(currentBoard)) {
+                        currentBoard.state.checkMate = 1;
+                    }
+                }
+                boardIndex++;
+            }
+            return validBoards;
         }
 };
 
@@ -458,23 +503,44 @@ int main(void) {
     board.printBoard();
     std::cout << '\n';
 
+    move.startSquare = d7;
+    move.endSquare = d5;
+    move.piece = 0;
+
+    board = board.move(move);
+    board.printBoard();
+    std::cout << '\n';
+
+    move.startSquare = d2;
+    move.endSquare = d4;
+    move.piece = 0;
+    move.enPassantSquare = d3;
+
+    board = board.move(move);
+    board.printBoard();
+    std::cout << '\n';
+
     std::cout << "hello" << '\n';
     
     static MoveGenerator moveGen = MoveGenerator();
 
-    moveGen.calculateAllMoves(board);
+    Board* legalBoards = moveGen.getAllLegalBoards(board);
 
-    moveCode* moveList = moveGen.getMoveList();
-    int moveCount = moveGen.getMoveCount();
+    int boardIndex = 0;
 
-    std::cout << moveCount << '\n';
+    Board currentBoard = Board();
 
-    for (int i = 0; i < moveCount; i++) {
-        Board newBoard = board.move(moveList[i]);
-        newBoard.printBoard();
-        std::cout << '\n';
+    std::cout << "DONE" << '\n';
+
+    while (!legalBoards[boardIndex].isEqual(Board())) {
+        currentBoard = legalBoards[boardIndex];
+        currentBoard.printBoard();
+        std::cout << boardIndex << '\n';
+
+        boardIndex++;
     }
 
+    delete[] legalBoards;
     return 0;
 };
 
