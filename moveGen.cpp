@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include "attackTables.cpp"
 #include "chessBoard.cpp"
 
@@ -438,34 +439,32 @@ class MoveGenerator {
             getKingMoves(board);
         }
 
-        Board* validateAllMoves(Board board) {
+        std::vector<Board>* validateAllMoves(Board board) {
             int boardCount = 0;
-            Board* validBoards = new Board[moveCount + 1];
+            std::vector<Board>* validBoards = new std::vector<Board>;
             for (int i = 0; i < moveCount; i++) {
-                validBoards[i] = Board();
                 Board newBoard = board.move(moveList[i]);
                 if (isBoardValid(newBoard)) {
-                    validBoards[boardCount] = newBoard;
+                    validBoards->push_back(newBoard);
                     boardCount++;
                 }
             }
-            validBoards[boardCount] = Board();
             return validBoards;
         }
 
         bool isBoardCheckMate(Board board) {
             calculateAllMoves(board);
-            Board* validBoards;
-            validBoards = validateAllMoves(board);
+            std::vector<Board>* validBoards = validateAllMoves(board);
             int boardIndex = 0;
-            while (!validBoards[boardIndex].isEqual(Board())) {
-                if (!isBoardCheck(validBoards[boardIndex])) {
-                    delete[] validBoards;
+            int vectorSize = validBoards->size();
+            for (int i = 0; i < vectorSize; i++) {
+                if (!isBoardCheck((*validBoards)[i])) {
+                    delete validBoards;
                     return false;
                 }
                 boardIndex++;
             }
-            delete[] validBoards;
+            delete validBoards;
             return true;
         }
 
@@ -477,15 +476,14 @@ class MoveGenerator {
             return this->moveCount;
         }
 
-        Board* getAllLegalBoards(Board board) {
+        std::vector<Board>* getAllLegalBoards(Board board) {
             calculateAllMoves(board);
-            std::cout << "moveCount " << moveCount - 1<< '\n';
-            Board* validBoards = validateAllMoves(board);
+            std::vector<Board>* validBoards = validateAllMoves(board);
             int boardIndex = 0;
-            while (!validBoards[boardIndex].isEqual(Board())) {
-                Board currentBoard = validBoards[boardIndex];
+            int vectorSize = validBoards->size();
+            for (int i = 0; i < vectorSize; i++) {
+                Board currentBoard = (*validBoards)[boardIndex];
                 if (isBoardCheck(currentBoard)) {
-                    currentBoard.printBoard();
                     currentBoard.state.check = 1;
                     if (isBoardCheckMate(currentBoard)) {
                         currentBoard.state.checkMate = 1;
@@ -493,11 +491,13 @@ class MoveGenerator {
                 }
                 boardIndex++;
             }
+            moveCount = 0;
             return validBoards;
         }
 };
 
-int main(void) {
+
+/* int main(void) {
     std::cout << "hello" << '\n';
     BoardState startingState;
     startingState.whiteToMove = 1;
@@ -521,8 +521,8 @@ int main(void) {
     board.printBoard();
     std::cout << '\n';
 
-    move.startSquare = g7;
-    move.endSquare = g6;
+    move.startSquare = e7;
+    move.endSquare = e5;
     move.piece = 0;
 
     board = board.move(move);
@@ -536,67 +536,24 @@ int main(void) {
     board = board.move(move);
     board.printBoard();
     std::cout << '\n';
-
-    move.startSquare = f8;
-    move.endSquare = g7;
-    move.piece = 1;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-
-    move.startSquare = b1;
-    move.endSquare = c3;
-    move.piece = 2;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-
-    move.startSquare = g8;
-    move.endSquare = f6;
-    move.piece = WKnight;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-
-    move.startSquare = d1;
-    move.endSquare = d2;
-    move.piece = WQueen;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-
-    move.startSquare = e7;
-    move.endSquare = e6;
-    move.piece = WPawn;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
     
     static MoveGenerator moveGen = MoveGenerator();
 
-    Board* legalBoards = moveGen.getAllLegalBoards(board);
-
-    int boardIndex = 0;
+    std::vector<Board>* legalBoards = moveGen.getAllLegalBoards(board);
 
     Board currentBoard = Board();
 
     std::cout << "DONE" << '\n';
 
-    while (!legalBoards[boardIndex].isEqual(Board())) {
-        currentBoard = legalBoards[boardIndex];
+    int legalBoardsSize = legalBoards->size();
+    for (int i = 0; i < legalBoardsSize; i++) {
+        currentBoard = (*legalBoards)[i];
         currentBoard.printBoard();
-        std::cout << boardIndex << '\n';
-
-        boardIndex++;
+        std::cout << i << '\n';
     }
 
-    delete[] legalBoards;
+    delete legalBoards;
     return 0;
-};
+}; */
 
 
