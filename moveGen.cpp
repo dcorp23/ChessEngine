@@ -5,17 +5,17 @@
 class MoveGenerator {
     private: 
         AttackTables attackTable = AttackTables();
-        moveCode moveList[256] = {};
+        MoveCode moveList[256] = {};
         int moveCount = 0;
 
-        void addMove(moveCode move) {
+        void addMove(MoveCode move) {
             moveList[moveCount] = move;
             moveCount++;
         }
 
         //everything outside this is set seperately for special moves
-        moveCode createMove(int startSquare, int endSquare, int piece, int capture) {
-            moveCode move;
+        MoveCode createMove(int startSquare, int endSquare, int piece, int capture) {
+            MoveCode move;
             move.startSquare = startSquare;
             move.endSquare = endSquare;
             move.piece = piece;
@@ -25,7 +25,7 @@ class MoveGenerator {
 
         //check if a square is attacked by the side given
         bool isSquareAttacked(int square, int side, Board board, map occupancy) {
-            map attackedMask;
+            map attackedMask = 0ULL;
             map current;
             map isAttacked = 1ULL << square;
 
@@ -38,7 +38,7 @@ class MoveGenerator {
                     switch (i % 6)
                     {
                     case 0:
-                        attackedMask |= attackTable.getPawnAttacks(getLSBIndex(current), 0);
+                        attackedMask |= attackTable.getPawnAttacks(getLSBIndex(current), side);
                         break;
                     case 1:
                         attackedMask |= attackTable.getBishopAttacks(getLSBIndex(current), occupancy);
@@ -90,7 +90,7 @@ class MoveGenerator {
             map attackMask;
 
             int attackMaskBitCount;
-            moveCode move;
+            MoveCode move;
             
             if (board.state.whiteToMove) {
                 beforeMove = board.bitMaps[WPawn];
@@ -214,7 +214,7 @@ class MoveGenerator {
             map afterMove;
             map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
             map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
-            moveCode move;
+            MoveCode move;
 
             beforeMove = board.bitMaps[board.state.whiteToMove ? WBishop: BBishop];
             //loop through each Bishop
@@ -249,7 +249,7 @@ class MoveGenerator {
             map afterMove;
             map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
             map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
-            moveCode move;
+            MoveCode move;
 
             beforeMove = board.bitMaps[board.state.whiteToMove ? WKnight : BKnight];
             //loop through each knight
@@ -284,7 +284,7 @@ class MoveGenerator {
             map afterMove;
             map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
             map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
-            moveCode move;
+            MoveCode move;
 
             beforeMove = board.bitMaps[board.state.whiteToMove ? WRook: BRook];
             //loop through each Rook
@@ -303,11 +303,11 @@ class MoveGenerator {
 
                     if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
                     if (enemyPieces & (1ULL << endSquare)) { //check for captures
-                        move = createMove(startSquare, endSquare, 2, 1);
+                        move = createMove(startSquare, endSquare, 3, 1);
                         addMove(move);
                         continue;
                     }
-                    move = createMove(startSquare, endSquare, 2, 0); //quite moves
+                    move = createMove(startSquare, endSquare, 3, 0); //quite moves
                     addMove(move);
                 }
             }
@@ -319,7 +319,7 @@ class MoveGenerator {
             map afterMove;
             map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
             map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
-            moveCode move;
+            MoveCode move;
 
             beforeMove = board.bitMaps[board.state.whiteToMove ? WQueen: BQueen];
             //loop through each Queen
@@ -354,7 +354,7 @@ class MoveGenerator {
             map afterMove;
             map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
             map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
-            moveCode move;
+            MoveCode move;
 
             beforeMove = board.bitMaps[board.state.whiteToMove ? WKing: BKing];
             int startSquare = getLSBIndex(beforeMove);
@@ -377,6 +377,53 @@ class MoveGenerator {
                 }
                 move = createMove(startSquare, endSquare, 5, 0); //quite moves
                 addMove(move);
+            }
+
+            //castling
+            bool castlingRights = (board.state.whiteToMove ? (board.state.whiteLongCastle || board.state.whiteShortCastle) :
+                                                            (board.state.blackLongCastle || board.state.blackShortCastle)) &&
+                                                            !board.state.check;
+
+            if (castlingRights) {
+                bool square1, square2;
+                if (board.state.whiteShortCastle || board.state.blackShortCastle) {
+                    map piecesInBetweenMask = 0b11ULL;
+                    piecesInBetweenMask <<= board.state.whiteToMove ? f1 : f8;
+                    if (!(piecesInBetweenMask & board.All)) {
+                        int kingSquare = getLSBIndex(board.bitMaps[board.state.whiteToMove ? 5 : 11]);
+                        square1 = isSquareAttacked(kingSquare + 1, !board.state.whiteToMove, board, board.All);
+                        square2 = isSquareAttacked(kingSquare + 2, !board.state.whiteToMove, board, board.All);
+                        if (!square1 && !square2) {
+                            move = createMove(kingSquare, kingSquare + 2, 5, 0);
+                            if (board.state.whiteToMove) {
+                                move.whiteShort = 1;
+                            }
+                            else {
+                                move.blackShort = 1;
+                            }
+                            addMove(move);
+                        }
+                    }
+                }
+                if (board.state.whiteLongCastle || board.state.blackLongCastle) {
+                    map piecesInBetweenMask = 0b111ULL;
+                    piecesInBetweenMask <<= board.state.whiteToMove ? b1 : b8;
+                    if (!(piecesInBetweenMask & board.All)) {
+                        int kingSquare = getLSBIndex(board.bitMaps[board.state.whiteToMove ? 5 : 11]);
+                        square1 = isSquareAttacked(kingSquare - 1, !board.state.whiteToMove, board, board.All);
+                        square2 = isSquareAttacked(kingSquare - 2, !board.state.whiteToMove, board, board.All);
+                        if (!square1 && !square2) {
+                            move = createMove(kingSquare, kingSquare - 2, 5, 0);
+                            if (board.state.whiteToMove) {
+                                move.whiteLong = 1;
+                            }
+                            else {
+                                move.blackLong = 1;
+                            }
+                            addMove(move);
+                        }
+                    }
+                }
             }
         }
 
@@ -422,7 +469,7 @@ class MoveGenerator {
             return true;
         }
 
-        moveCode* getMoveList() {
+        MoveCode* getMoveList() {
             return this->moveList;
         }
 
@@ -432,6 +479,7 @@ class MoveGenerator {
 
         Board* getAllLegalBoards(Board board) {
             calculateAllMoves(board);
+            std::cout << "moveCount " << moveCount - 1<< '\n';
             Board* validBoards = validateAllMoves(board);
             int boardIndex = 0;
             while (!validBoards[boardIndex].isEqual(Board())) {
@@ -451,7 +499,7 @@ class MoveGenerator {
 
 int main(void) {
     std::cout << "hello" << '\n';
-    boardState startingState;
+    BoardState startingState;
     startingState.whiteToMove = 1;
 
     Board board = Board(startingPawns, startingKnights, startingBishops, startingRooks, startingQueen, startingKing, 
@@ -460,67 +508,74 @@ int main(void) {
 
     board.printBoard();
 
+    std::cout << board.state.blackShortCastle << '\n';
+
     std::cout << '\n';
 
-    moveCode move;
-    move.startSquare = c2;
-    move.endSquare = c4;
+    MoveCode move;
+    move.startSquare = d2;
+    move.endSquare = d4;
     move.piece = 0;
+
+    board = board.move(move);
+    board.printBoard();
+    std::cout << '\n';
+
+    move.startSquare = g7;
+    move.endSquare = g6;
+    move.piece = 0;
+
+    board = board.move(move);
+    board.printBoard();
+    std::cout << '\n';
+
+    move.startSquare = c1;
+    move.endSquare = e3;
+    move.piece = 1;
+
+    board = board.move(move);
+    board.printBoard();
+    std::cout << '\n';
+
+    move.startSquare = f8;
+    move.endSquare = g7;
+    move.piece = 1;
+
+    board = board.move(move);
+    board.printBoard();
+    std::cout << '\n';
+
+    move.startSquare = b1;
+    move.endSquare = c3;
+    move.piece = 2;
+
+    board = board.move(move);
+    board.printBoard();
+    std::cout << '\n';
+
+    move.startSquare = g8;
+    move.endSquare = f6;
+    move.piece = WKnight;
+
+    board = board.move(move);
+    board.printBoard();
+    std::cout << '\n';
+
+    move.startSquare = d1;
+    move.endSquare = d2;
+    move.piece = WQueen;
 
     board = board.move(move);
     board.printBoard();
     std::cout << '\n';
 
     move.startSquare = e7;
-    move.endSquare = e5;
-    move.piece = 0;
+    move.endSquare = e6;
+    move.piece = WPawn;
 
     board = board.move(move);
     board.printBoard();
     std::cout << '\n';
-
-    move.startSquare = c4;
-    move.endSquare = c5;
-    move.piece = 0;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-
-    move.startSquare = e5;
-    move.endSquare = e4;
-    move.piece = 0;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-
-    move.startSquare = c5;
-    move.endSquare = c6;
-    move.piece = 0;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-
-    move.startSquare = d7;
-    move.endSquare = d5;
-    move.piece = 0;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-
-    move.startSquare = d2;
-    move.endSquare = d4;
-    move.piece = 0;
-    move.enPassantSquare = d3;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-
-    std::cout << "hello" << '\n';
     
     static MoveGenerator moveGen = MoveGenerator();
 

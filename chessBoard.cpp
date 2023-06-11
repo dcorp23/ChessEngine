@@ -8,8 +8,8 @@ using std::string;
 
 //starting positions from the white side
 map startingPawns = 0x00FF000000000000;
-map startingKing = 0x0800000000000000;
-map startingQueen = 0x1000000000000000;
+map startingKing = 0x1000000000000000;
+map startingQueen = 0x0800000000000000;
 map startingBishops = 0x4200000000000000;
 map startingKnights = 0x2400000000000000;
 map startingRooks = 0x8100000000000000;
@@ -47,7 +47,7 @@ void printMap(map printingMap) {
 };
 
 //starting is 0x01;
-struct boardState {
+struct BoardState {
     unsigned short whiteToMove : 1;
     unsigned short whiteShortCastle : 1;
     unsigned short whiteLongCastle : 1;
@@ -57,10 +57,21 @@ struct boardState {
                                 //0 is no enpassant because you can't enpassant on a8 anyway
     unsigned short check : 1;
     unsigned short checkMate: 1;
+
+    BoardState() {
+        whiteToMove = 1;
+        whiteShortCastle = 1;
+        whiteLongCastle = 1;
+        blackShortCastle = 1; 
+        blackLongCastle = 1;
+        enPassant = 0;
+        check = 0;
+        checkMate = 0;
+    }
 };
 
 //piece 0-5 pawn bishop knight rook queen king
-struct moveCode {
+struct MoveCode {
     unsigned int startSquare : 6;
     unsigned int endSquare : 6;
     unsigned int piece: 3;
@@ -82,8 +93,9 @@ struct Board {
 
     map bitMaps[12];
 
-    boardState state;
+    BoardState state;
 
+    //default constructor for blank board
     Board() {
         for (int i = WPawn; i <= BKing; i++) {
             bitMaps[i] = 0ULL;
@@ -97,13 +109,14 @@ struct Board {
             Black |= bitMaps[i];
         }
         All = 0ULL;
-        boardState newState = boardState();
+        BoardState newState = BoardState();
         state = newState;
     }
 
+    //constructor for starting position
     Board(
         map wp, map wn, map wb, map wr, map wq, map wk,
-        map bp, map bn, map bb, map br, map bq, map bk, boardState state) :
+        map bp, map bn, map bb, map br, map bq, map bk, BoardState state) :
         White(wp | wn | wb | wr | wq | wk), 
         Black(bp | bn | bb | br | bq | bk), 
         All(White | Black), 
@@ -111,7 +124,8 @@ struct Board {
         bitMaps{wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk}
     {};
 
-    Board(int piece, int side, map newPieceMap, int secondPiece, map secondPieceMap, Board* board, boardState newState) {
+    //constructor for making a move
+    Board(int piece, int side, map newPieceMap, int secondPiece, map secondPieceMap, Board* board, BoardState newState) {
         for (int i = WPawn; i <= BKing; i++) {
             bitMaps[i] = board->bitMaps[i];
         }
@@ -132,7 +146,7 @@ struct Board {
         state = newState;
     }
 
-    Board move(moveCode code) {
+    Board move(MoveCode code) {
         map moveMask = 0ULL;
         moveMask |= (1ULL << code.startSquare);
         moveMask |= (1ULL << code.endSquare);
@@ -148,10 +162,34 @@ struct Board {
             pieceMap ^= moveMask;
         }
 
-        boardState newState = state;
+        BoardState newState = state;
         newState.enPassant = code.enPassantSquare;
         newState.whiteToMove = !newState.whiteToMove;
+        if (state.whiteToMove) {
+            if (code.piece == 5) {
+                newState.whiteLongCastle = 0;
+                newState.whiteShortCastle = 0;
+            } 
+            if (state.whiteLongCastle) {
+                if (code.piece == 3 && code.startSquare == a1) newState.whiteLongCastle = 0;
+            }
+            if (state.whiteShortCastle) {
+                if (code.piece == 3 && code.startSquare == h1) newState.whiteShortCastle = 0;
+            }
+        } else {
+            if (code.piece == 5) {
+                newState.blackLongCastle = 0;
+                newState.blackShortCastle = 0;
+            }
+            if (state.blackLongCastle) {
+                if (code.piece == 3 && code.startSquare == a8) newState.blackLongCastle = 0;
+            }
+            if (state.blackShortCastle) {
+                if (code.piece == 3 && code.startSquare == h8) newState.blackShortCastle = 0;
+            }
+        }
 
+        //enPassant
         if(code.enPassantFlag) {
             map captureMap = (1ULL << (state.enPassant + (state.whiteToMove ? 8 : -8)));
             captureMap ^= bitMaps[0 + (state.whiteToMove ? 6 : 0)];
@@ -178,22 +216,20 @@ struct Board {
 
         //long castle
         if (code.blackLong || code.whiteLong) {
-            map rookMap = 1ULL << (code.whiteLong ? a1 : a8);
-            rookMap |= 1ULL << (code.whiteLong ? d1 : d8);
-
+            map rookMap = 0b1001ULL;
+            rookMap <<= code.whiteLong ? a1 : a8;
             rookMap ^= bitMaps[3 + (code.whiteLong ? 0 : 6)];
 
-            return Board(code.piece, state.whiteToMove, pieceMap, 3 + (code.whiteLong ? 0 : 6), rookMap, this, newState);
+            return Board(code.piece, state.whiteToMove, pieceMap, 3 + (state.whiteToMove ? 0 : 6), rookMap, this, newState);
         }
 
         //short castle
         if (code.blackShort || code.whiteShort) {
-            map rookMap = (1ULL << code.whiteLong ? h1 : h8);
-            rookMap |= (1ULL << code.whiteLong ? f1 : f8);
+            map rookMap = 0b101ULL;
+            rookMap <<= code.whiteShort ? f1 : f8;
+            rookMap ^= bitMaps[3 + (code.whiteShort ? 0 : 6)];
 
-            rookMap ^= bitMaps[3 + (code.whiteLong ? 0 : 6)];
-
-            return Board(code.piece, state.whiteToMove, pieceMap, 3 + (code.whiteLong ? 0 : 6), rookMap, this, newState);
+            return Board(code.piece, state.whiteToMove, pieceMap, 3 + (state.whiteToMove ? 0 : 6), rookMap, this, newState);
         }
         
         //quiet moves
