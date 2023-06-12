@@ -300,7 +300,11 @@ struct Board {
         }
 
         if (code.promotion) {
+            pieceMap ^= (1ULL << code.endSquare);
+            map newPieceMap = bitMaps[code.promotion + (state.whiteToMove ? 0 : 6)];
+            newPieceMap ^= (1ULL << code.endSquare);
 
+            return Board(code.piece, state.whiteToMove, pieceMap, code.promotion + (state.whiteToMove ? 0 : 6), newPieceMap, this, newState);
         }
 
         //enPassant
