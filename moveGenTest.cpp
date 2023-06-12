@@ -6,9 +6,8 @@
 //each depth is 1 move for 1 side so depth 6 would total 3 moves white 3 moves black
 //boards is a pointer to a vector with 1 starting baord
 std::vector<Board>* getBoardsAtDepth(std::vector<Board>* boards, int depth) {
-    std::cout << "start\n";
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     static MoveGenerator moveGen = MoveGenerator();
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     if (depth == 0) {
         return boards;
     } else {
@@ -35,12 +34,7 @@ std::vector<Board>* getBoardsAtDepth(std::vector<Board>* boards, int depth) {
 
 int main(void) {
     std::cout << "Starting\n";
-    BoardState startingState;
-    startingState.whiteToMove = 1;
-
-    Board board = Board(startingPawns, startingKnights, startingBishops, startingRooks, startingQueen, startingKing, 
-            startingPawns >> 40, startingKnights >> 56, startingBishops >> 56, startingRooks >> 56, startingQueen >> 56, startingKing >> 56,
-            startingState);
+    Board board = Board(startingFEN);
 
     board.printBoard();
 
@@ -48,7 +42,7 @@ int main(void) {
     boards->push_back(board);
     std::cout << boards->size() << '\n';
 
-    boards = getBoardsAtDepth(boards, 4);
+    boards = getBoardsAtDepth(boards, 3);
 
     delete boards;
     return 0;

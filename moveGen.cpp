@@ -35,7 +35,8 @@ class MoveGenerator {
 
             for (int i = startPiece; i <= endPiece; i++) {
                 current = board.bitMaps[i];
-                for (int j = 0; j < getBitCount(board.bitMaps[i]); j++) {
+                int bitCount = getBitCount(board.bitMaps[i]);
+                for (int j = 0; j < bitCount; j++) {
                     switch (i % 6)
                     {
                     case 0:
@@ -60,10 +61,9 @@ class MoveGenerator {
                         break;
                     }
                     current = popLSB(current);
+                    if (attackedMask & isAttacked) return true;
                 }
             }
-
-            if (attackedMask & isAttacked) return true;
             return false;
         }
 
@@ -109,7 +109,7 @@ class MoveGenerator {
                         //check for normal captures
                         if ((1ULL << attackSquare) & board.Black) {
                             move = createMove(startSquare, attackSquare, 0, 1);
-                            if(attackSquare < 8) { //promotions
+                            if(attackSquare <= h8) { //promotions
                                 for (int i = 1; i < 5; i++) {
                                     move.promotion = i;
                                     addMove(move);
@@ -127,11 +127,11 @@ class MoveGenerator {
                     }
 
                     //check if it can move forward 1 square
-                    afterMove = (1ULL << startSquare) >> 8;
+                    afterMove = (1ULL << (startSquare - 8));
                     if ((afterMove & board.All) != 0ULL) continue;
                     int endSquare = getLSBIndex(afterMove);
                     move = createMove(startSquare, endSquare, 0, 0);
-                    if(endSquare < a7) { //promotions
+                    if(endSquare <= h8) { //promotions
                         for (int i = 1; i < 5; i++) {
                             move.promotion = i;
                             addMove(move);
@@ -141,12 +141,12 @@ class MoveGenerator {
                     }
 
                     //check if it can move forware 2 squares
-                    if (beforeMove & rank2) continue;
-                    afterMove = (1ULL << startSquare) >> 16;
+                    if (startSquare <= h3) continue;
+                    afterMove = (1ULL << (startSquare - 16));
                     if ((afterMove & board.All) != 0ULL) continue;
                     endSquare = getLSBIndex(afterMove);
                     move = createMove(startSquare, endSquare, 0, 0);
-                    move.enPassantSquare = endSquare - 8;
+                    move.enPassantSquare = endSquare + 8;
                     addMove(move);
                 }
             }
@@ -166,7 +166,7 @@ class MoveGenerator {
                         //check for normal captures
                         if ((1ULL << attackSquare) & board.White) {
                             move = createMove(startSquare, attackSquare, 0, 1);
-                            if(attackSquare > h2) { //promotions
+                            if(attackSquare >= a1) { //promotions
                                 for (int i = 1; i < 5; i++) {
                                     move.promotion = i;
                                     addMove(move);
@@ -184,11 +184,11 @@ class MoveGenerator {
                     }
 
                     //check if it can move forward 1 square
-                    afterMove = (1ULL << startSquare) << 8;
+                    afterMove = (1ULL << (startSquare + 8));
                     if ((afterMove & board.All) != 0ULL) continue;
                     int endSquare = getLSBIndex(afterMove);
                     move = createMove(startSquare, endSquare, 0, 0);
-                    if(endSquare > h2) { //promotions
+                    if(endSquare >= a1) { //promotions
                         for (int i = 1; i < 5; i++) {
                             move.promotion = i;
                             addMove(move);
@@ -198,12 +198,12 @@ class MoveGenerator {
                     }
 
                     //check if it can move forware 2 squares
-                    if (beforeMove & rank7) continue;
-                    afterMove = (1ULL << startSquare) << 16;
+                    if (startSquare >= a6) continue;
+                    afterMove = (1ULL << (startSquare + 16));
                     if ((afterMove & board.All) != 0ULL) continue;
                     endSquare = getLSBIndex(afterMove);
                     move = createMove(startSquare, endSquare, 0, 0);
-                    move.enPassantSquare = endSquare + 8;
+                    move.enPassantSquare = endSquare - 8;
                     addMove(move);
                 }
             }
@@ -437,6 +437,7 @@ class MoveGenerator {
             getRookMoves(board);
             getQueenMoves(board);
             getKingMoves(board);
+            //std::cout << "moves found: " << moveCount << '\n';
         }
 
         std::vector<Board>* validateAllMoves(Board board) {
@@ -495,65 +496,3 @@ class MoveGenerator {
             return validBoards;
         }
 };
-
-
-/* int main(void) {
-    std::cout << "hello" << '\n';
-    BoardState startingState;
-    startingState.whiteToMove = 1;
-
-    Board board = Board(startingPawns, startingKnights, startingBishops, startingRooks, startingQueen, startingKing, 
-            startingPawns >> 40, startingKnights >> 56, startingBishops >> 56, startingRooks >> 56, startingQueen >> 56, startingKing >> 56,
-            startingState);
-
-    board.printBoard();
-
-    std::cout << board.state.blackShortCastle << '\n';
-
-    std::cout << '\n';
-
-    MoveCode move;
-    move.startSquare = d2;
-    move.endSquare = d4;
-    move.piece = 0;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-
-    move.startSquare = e7;
-    move.endSquare = e5;
-    move.piece = 0;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-
-    move.startSquare = c1;
-    move.endSquare = e3;
-    move.piece = 1;
-
-    board = board.move(move);
-    board.printBoard();
-    std::cout << '\n';
-    
-    static MoveGenerator moveGen = MoveGenerator();
-
-    std::vector<Board>* legalBoards = moveGen.getAllLegalBoards(board);
-
-    Board currentBoard = Board();
-
-    std::cout << "DONE" << '\n';
-
-    int legalBoardsSize = legalBoards->size();
-    for (int i = 0; i < legalBoardsSize; i++) {
-        currentBoard = (*legalBoards)[i];
-        currentBoard.printBoard();
-        std::cout << i << '\n';
-    }
-
-    delete legalBoards;
-    return 0;
-}; */
-
-

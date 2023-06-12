@@ -1,18 +1,14 @@
 #include <iostream>
 #include <chrono>
+#include <vector>
 
 
 typedef unsigned long long map;
 
 using std::string;
 
-//starting positions from the white side
-map startingPawns = 0x00FF000000000000;
-map startingKing = 0x1000000000000000;
-map startingQueen = 0x0800000000000000;
-map startingBishops = 0x4200000000000000;
-map startingKnights = 0x2400000000000000;
-map startingRooks = 0x8100000000000000;
+//starting FEN string
+const std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 //board by chess notation
 //use this by: 1ULL << f1 which gives a bitboard with just f1
@@ -113,16 +109,130 @@ struct Board {
         state = newState;
     }
 
-    //constructor for starting position
-    Board(
-        map wp, map wn, map wb, map wr, map wq, map wk,
-        map bp, map bn, map bb, map br, map bq, map bk, BoardState state) :
-        White(wp | wn | wb | wr | wq | wk), 
-        Black(bp | bn | bb | br | bq | bk), 
-        All(White | Black), 
-        state(state), 
-        bitMaps{wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk}
-    {};
+    //FEN Board to board
+    Board(std::string fenString) {
+        //initialize blank boards
+        for (int i = WPawn; i <= BKing; i++) {
+            bitMaps[i] = 0ULL;
+        }
+
+        std::vector<std::string> fenParts;
+        int stringLength = fenString.length();
+        std::string fenPart = "";
+        int stringIndex = 0;
+        for (stringIndex = 0; stringIndex < stringLength; stringIndex++) {
+            if (fenString.at(stringIndex) == ' ') {
+                fenParts.push_back(fenPart);
+                fenPart = "";
+                continue;
+            }
+            fenPart = fenPart + fenString.at(stringIndex);
+        }
+
+        int square = 0;
+        std::string currentString = fenParts[0];
+        stringLength = currentString.length();
+        for (stringIndex = 0; stringIndex < stringLength; stringIndex++) {
+            switch (currentString[stringIndex])
+            {
+            case 'P':
+                bitMaps[WPawn] |= (1ULL << square);
+                square++;
+                break;
+            case 'B':
+                bitMaps[WBishop] |= (1ULL << square);
+                square++;
+                break;
+            case 'N':
+                bitMaps[WKnight] |= (1ULL << square);
+                square++;
+                break;
+            case 'R':
+                bitMaps[WRook] |= (1ULL << square);
+                square++;
+                break;
+            case 'Q':
+                bitMaps[WQueen] |= (1ULL << square);
+                square++;
+                break;
+            case 'K':
+                bitMaps[WKing] |= (1ULL << square);
+                square++;
+                break;
+            case 'p':
+                bitMaps[BPawn] |= (1ULL << square);
+                square++;
+                break;
+            case 'b':
+                bitMaps[BBishop] |= (1ULL << square);
+                square++;
+                break;
+            case 'n':
+                bitMaps[BKnight] |= (1ULL << square);
+                square++;
+                break;
+            case 'r':
+                bitMaps[BRook] |= (1ULL << square);
+                square++;
+                break;
+            case 'q':
+                bitMaps[BQueen] |= (1ULL << square);
+                square++;
+                break;
+            case 'k':
+                bitMaps[BKing] |= (1ULL << square);
+                square++;
+                break;
+            case '/':
+                break;
+            default:
+                square = square + (int)(currentString[stringIndex] - 48);
+                break;
+            }
+        }
+
+        BoardState newState = BoardState();
+        newState.whiteToMove = (fenParts[1] == "w") ? 1 : 0;
+
+        currentString = fenParts[2];
+        stringLength = currentString.length();
+        for (stringIndex = 0; stringIndex < stringLength; stringIndex++) {
+            if (currentString[stringIndex] == '-') {
+                newState.whiteLongCastle = 0;
+                newState.whiteShortCastle = 0;
+                newState.blackLongCastle = 0;
+                newState.blackShortCastle = 0;
+            } else {
+                if (currentString[stringIndex] == 'K') newState.whiteShortCastle = 1;
+                if (currentString[stringIndex] == 'Q') newState.whiteLongCastle = 1;
+                if (currentString[stringIndex] == 'k') newState.blackShortCastle = 1;
+                if (currentString[stringIndex] == 'q') newState.blackLongCastle = 1;
+            }
+        }
+
+        currentString = fenParts[2];
+        stringLength = currentString.length();
+        if (currentString[0] == '-') {
+            newState.enPassant = 0;
+        } else {
+            int column = (int)(currentString[0] - 97);
+            int row = (int)(currentString[1] - 48);
+
+            newState.enPassant = (row * 8) + column;
+        }
+
+        White = 0ULL;
+        Black = 0ULL;
+        for (int i = WPawn; i <= WKing; i++) {
+            White |= bitMaps[i];
+        }
+        for (int i = BPawn; i <= BKing; i++) {
+            Black |= bitMaps[i];
+        }
+        All = White | Black;
+
+        state = newState;
+    }
 
     //constructor for making a move
     Board(int piece, int side, map newPieceMap, int secondPiece, map secondPieceMap, Board* board, BoardState newState) {
@@ -187,6 +297,10 @@ struct Board {
             if (state.blackShortCastle) {
                 if (code.piece == 3 && code.startSquare == h8) newState.blackShortCastle = 0;
             }
+        }
+
+        if (code.promotion) {
+
         }
 
         //enPassant
@@ -270,5 +384,4 @@ struct Board {
     bool isEqual(Board board) {
         return this->All == board.All;
     }
-    
 };
