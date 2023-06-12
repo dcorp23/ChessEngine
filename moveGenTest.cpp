@@ -163,7 +163,7 @@ void testPawnMoves() {
 }
 
 void testBishopMoves() {
-    std::cout << "Test Pawn Moves: 5 Checkpoints\n";
+    std::cout << "Test Bishop Moves: 5 Checkpoints\n";
     Board board;
     int numberOfBoards;
     std::vector<Board>* newBoards;
@@ -207,8 +207,167 @@ void testBishopMoves() {
     delete newBoards;
 }
 
+void testKnightMoves() {
+    std::cout << "Test Knight Moves: 7 Checkpoints\n";
+    Board board;
+    int numberOfBoards;
+    std::vector<Board>* newBoards;
+
+    //knights on starting squares
+    board = Board("8/8/8/8/8/8/8/1N4N1 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 6);
+    std::cout << "Checkpoint #1\n";
+
+    //knight with all squares blocked by team pawns and they can't move
+    board = Board("2n1n3/1nP1Pn2/1P3P2/1n1N1n2/1Pn1nP2/2P1P3/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 0);
+    std::cout << "Checkpoint #2\n";
+
+    //knight with all squares blocked by enemy pawns
+    board = Board("8/2p1p3/1p3p2/3N4/1p3p2/2p1p3/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 8);
+    std::cout << "Checkpoint #3\n";
+
+    //knight with both squares taken by team pawns and enemy pawns
+    board = Board("4n1n1/4P1Pn/3p3P/5N1n/3p3P/4p1p1/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 4);
+    std::cout << "Checkpoint #4\n";
+
+    //black knight blocked by all team pawns
+    board = Board("8/2p1p3/1pN1Np2/1N1n1N2/1p3p2/1Np1pN2/2N1N3/8 b - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 0);
+    std::cout << "Checkpoint #5\n";
+
+    //8 white knights in a row
+    board = Board("8/8/8/8/NNNNNNNN/8/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 52);
+    std::cout << "Checkpoint #6\n";
+
+    //8 black knights in a row
+    board = Board("8/8/8/nnnnnnnn/8/8/8/8 b - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 52);
+    std::cout << "Checkpoint #7\n";
+    
+    std::cout << "Knight Tests Passed\n\n";
+    delete newBoards;
+}
+
+void testRookMoves() {
+    std::cout << "Test Rook Moves: 5 Checkpoints\n";
+    Board board;
+    int numberOfBoards;
+    std::vector<Board>* newBoards;
+
+    //Rooks on their starting squares
+    board = Board("8/8/8/8/8/8/8/R6R w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 26);
+    std::cout << "Checkpoint #1\n";
+
+    //Rooks blocked in the center by pawns
+    board = Board("8/8/2PPPP2/2PRRP2/2PRRP2/2PPPP2/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 4);
+    std::cout << "Checkpoint #2\n";
+
+    //Rooks blocked by enemy knights to test captures
+    board = Board("8/8/4n3/8/2n1R2n/4n3/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 8);
+    std::cout << "Checkpoint #3\n";
+
+    //Random blocks and captures for white rooks
+    board = Board("7n/2n2R1P/2P5/8/2R2q2/2R5/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 23);
+    std::cout << "Checkpoint #4\n";
+
+    //Random blocks and captures for black rooks
+    board = Board("6N1/3Q2r1/8/6N1/1N1r4/3p4/3N2r1/8 b - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 24);
+    std::cout << "Checkpoint #5\n";
+    
+    std::cout << "Rook Tests Passed\n\n";
+    delete newBoards;
+}
+
+void testQueenMoves() {
+    std::cout << "Test Queen Moves: 6 Checkpoints\n";
+    Board board;
+    int numberOfBoards;
+    std::vector<Board>* newBoards;
+
+    //Queen on starting square
+    board = Board("8/8/8/8/8/8/8/3Q4 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 21);
+    std::cout << "Checkpoint #1\n";
+
+    //Queens in the center blocked by team pawns
+    board = Board("8/8/2PPPP2/2PQQP2/2PQQP2/2PPPP2/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 4);
+    std::cout << "Checkpoint #2\n";
+
+    //Queens in the center blocked by enemy knights
+    board = Board("8/8/2nnnn2/2nQQn2/2nQQn2/2nnnn2/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 20);
+    std::cout << "Checkpoint #3\n";
+
+    //White queens randomly blocked by team and enemy pieces
+    board = Board("5n2/2n1nPn1/1n4P1/1P2QQ2/4PP2/1n6/1P6/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 18);
+    std::cout << "Checkpoint #4\n";
+
+    //Black queens randomly blocked by team and enemy pieces
+    board = Board("8/8/N2q2p1/6P1/1N1p4/3N2q1/8/q5N1 b - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 43);
+    std::cout << "Checkpoint #5\n";
+
+    //Queens on the long dark square diagonal
+    board = Board("7Q/6Q1/5Q2/4Q3/3Q4/2Q5/1Q6/Q7 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 136);
+    std::cout << "Checkpoint #6\n";
+    
+    std::cout << "Queen Tests Passed\n\n";
+    delete newBoards;
+}
+
 int main(void) {
     std::cout << "Move Generation Tests: \n";
     testBishopMoves();
+    testKnightMoves();
+    testRookMoves();
+    testQueenMoves();
     return 0;
 }
