@@ -1,12 +1,14 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
+#include <cassert>
 #include "moveGen.cpp"
+
+static MoveGenerator moveGen = MoveGenerator();
 
 //each depth is 1 move for 1 side so depth 6 would total 3 moves white 3 moves black
 //boards is a pointer to a vector with 1 starting baord
 std::vector<Board>* getBoardsAtDepth(std::vector<Board>* boards, int depth) {
-    static MoveGenerator moveGen = MoveGenerator();
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     if (depth == 0) {
         return boards;
@@ -32,18 +34,135 @@ std::vector<Board>* getBoardsAtDepth(std::vector<Board>* boards, int depth) {
     }
 }
 
+void testPawnMoves() {
+    std::cout << "Test Pawn Moves: 16 Checkpoints\n";
+    Board board;
+    int numberOfBoards;
+    std::vector<Board>* newBoards;
+
+    std::cout << "White Pawns: \n";
+
+    //pawns on starting square
+    board = Board("8/8/8/8/8/8/PPPPPPPP/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 16);
+    std::cout << "Checkpoint #1\n";
+
+    //pawns on starting square knights blocking pushing 2 squares
+    board = Board("8/8/8/8/nnnnnnnn/8/PPPPPPPP/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 8);
+    std::cout << "Checkpoint #2\n";
+
+    //2 rows of pawns
+    board = Board("8/8/8/8/8/PPPPPPPP/PPPPPPPP/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 8);
+    std::cout << "Checkpoint #3\n";
+
+    //pawns on starting squares with knights in front of them
+    board = Board("8/8/8/8/8/nnnnnnnn/PPPPPPPP/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 14);
+    std::cout << "Checkpoint #4\n";
+
+    //8 pawns 1 square from promotion
+    board = Board("8/PPPPPPPP/8/8/8/8/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 32);
+    std::cout << "Checkpoint #5\n";
+
+    //8 pawns 1 square from promotion with a knights in front of them
+    board = Board("nnnnnnnn/PPPPPPPP/8/8/8/8/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 14 * 4);
+    std::cout << "Checkpoint #6\n";
+
+    //random captures
+    board = Board("5nn1/5P2/2nn4/1n1Pn1n1/1P3P2/8/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 8);
+    std::cout << "Checkpoint #7\n";
+
+    //en passant
+    board = Board("8/8/8/3Pp3/8/8/8/8 w - e6 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 2);
+    std::cout << "Checkpoint #8\n";
+
+    //------------------------------
+    //------------------------------
+    std::cout << "\nBlack Pawns: \n";
+
+    //pawns on starting square
+    board = Board("8/pppppppp/8/8/8/8/8/8 b - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 16);
+    std::cout << "Checkpoint #9\n";
+
+    //pawns on starting square knights blocking pushing 2 squares
+    board = Board("8/pppppppp/8/NNNNNNNN/8/8/8/8 b - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 8);
+    std::cout << "Checkpoint #10\n";
+
+    //2 rows of pawns
+    board = Board("8/pppppppp/pppppppp/8/8/8/8/8 b - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 8);
+    std::cout << "Checkpoint #11\n";
+
+    //pawns on starting squares with knights in front of them
+    board = Board("8/pppppppp/NNNNNNNN/8/8/8/8/8 b - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 14);
+    std::cout << "Checkpoint #12\n";
+
+    //8 pawns 1 square from promotion
+    board = Board("8/8/8/8/8/8/pppppppp/8 b - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 32);
+    std::cout << "Checkpoint #13\n";
+
+    //8 pawns 1 square from promotion with a knights in front of them
+    board = Board("8/8/8/8/8/8/pppppppp/NNNNNNNN b - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 14 * 4);
+    std::cout << "Checkpoint #14\n";
+
+    //random captures
+    board = Board("8/8/8/2p3p1/1N1Np1N1/4NN2/2p5/1NN5 b - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 8);
+    std::cout << "Checkpoint #15\n";
+
+    //en passant
+    board = Board("8/8/8/8/3Pp3/8/8/8 b - d3 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 2);
+    std::cout << "Checkpoint #16\n";
+
+    delete newBoards;
+}
+
 int main(void) {
-    std::cout << "Starting\n";
-    Board board = Board(startingFEN);
-
-    board.printBoard();
-
-    std::vector<Board>* boards = new std::vector<Board>;
-    boards->push_back(board);
-    std::cout << boards->size() << '\n';
-
-    boards = getBoardsAtDepth(boards, 3);
-
-    delete boards;
+    std::cout << "Move Generation Tests: \n";
+    testPawnMoves();
     return 0;
 }

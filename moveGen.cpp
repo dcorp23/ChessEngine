@@ -358,6 +358,7 @@ class MoveGenerator {
             MoveCode move;
 
             beforeMove = board.bitMaps[board.state.whiteToMove ? WKing: BKing];
+            if (beforeMove == 0ULL) return;
             int startSquare = getLSBIndex(beforeMove);
             beforeMove = popLSB(beforeMove);
 
