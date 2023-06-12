@@ -363,11 +363,101 @@ void testQueenMoves() {
     delete newBoards;
 }
 
+void testKingMoves() {
+    std::cout << "Test King Moves: 10 Checkpoints\n";
+    Board board;
+    int numberOfBoards;
+    std::vector<Board>* newBoards;
+
+    //King on the starting square
+    board = Board("8/8/8/8/8/8/8/4K3 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 5);
+    delete newBoards;
+    std::cout << "Checkpoint #1\n";
+
+    //King in the center
+    board = Board("8/8/8/4K3/8/8/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 8);
+    delete newBoards;
+    std::cout << "Checkpoint #2\n";
+
+    //King in the center blocked by team pawns
+    board = Board("8/8/3PPP2/3PKP2/3PPP2/8/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 3);
+    delete newBoards;
+    std::cout << "Checkpoint #3\n";
+
+    //King in the center blocked by 4 enemy kings
+    board = Board("8/8/4k3/8/2k1K1k1/8/4k3/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 0);
+    delete newBoards;
+    std::cout << "Checkpoint #4\n";
+
+    //King with three enemy pawns behind him
+    board = Board("8/8/8/8/2K5/1ppp4/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 8);
+    delete newBoards;
+    std::cout << "Checkpoint #5\n";
+
+    //Black King trapped by rooks in stalemate
+    board = Board("3R1R2/8/8/7R/4k3/7R/8/8 b - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 0);
+    delete newBoards;
+    std::cout << "Checkpoint #6\n";
+
+    //White king castle long and short
+    board = Board("8/8/8/8/8/8/8/R3K2R w KQ - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 26);
+    delete newBoards;
+    std::cout << "Checkpoint #7\n";
+
+    //Black king castle long and short
+    board = Board("r3k2r/8/8/8/8/8/8/8 b kq - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 26);
+    delete newBoards;
+    std::cout << "Checkpoint #8\n";
+
+    //White king castle blocked by rooks attacking squares next to him
+    board = Board("3r1r2/8/8/8/8/8/8/R3K2R w KQ - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 20);
+    delete newBoards;
+    std::cout << "Checkpoint #9\n";
+
+    //Black king castle blocked by rooks attacking squares next to him
+    board = Board("r3k2r/8/8/8/8/8/8/3R1R2 b kq - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 20);
+    delete newBoards;
+    std::cout << "Checkpoint #10\n";
+    
+    std::cout << "King Tests Passed\n\n";
+}
+
 int main(void) {
     std::cout << "Move Generation Tests: \n";
     testBishopMoves();
     testKnightMoves();
     testRookMoves();
     testQueenMoves();
+    testKingMoves();
     return 0;
 }
