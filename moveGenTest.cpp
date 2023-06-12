@@ -158,11 +158,57 @@ void testPawnMoves() {
     assert(numberOfBoards == 2);
     std::cout << "Checkpoint #16\n";
 
+    std::cout << "Pawn Tests Passed\n\n";
+    delete newBoards;
+}
+
+void testBishopMoves() {
+    std::cout << "Test Pawn Moves: 5 Checkpoints\n";
+    Board board;
+    int numberOfBoards;
+    std::vector<Board>* newBoards;
+
+    //bishops on starting square
+    board = Board("8/8/8/8/8/8/8/2B2B2 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 14);
+    std::cout << "Checkpoint #1\n";
+
+    //bishops blocked in center
+    board = Board("8/8/2PPPP2/2PBBP2/2PBBP2/2PPPP2/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 4);
+    std::cout << "Checkpoint #2\n";
+
+    //bishops randomly blocked
+    board = Board("6B1/6P1/3P4/1P6/BBBB4/1P2P3/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 27);
+    std::cout << "Checkpoint #3\n";
+
+    //bishops captures
+    board = Board("8/8/2pppp2/2pBBp2/2pBBp2/2pppp2/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 12);
+    std::cout << "Checkpoint #4\n";
+
+    //random bishops captures
+    board = Board("8/3p3p/1p6/2B2B2/1n4n1/3p4/5n2/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfBoards = newBoards->size();
+    assert(numberOfBoards == 15);
+    std::cout << "Checkpoint #5\n";
+    
+    std::cout << "Bishop Tests Passed\n\n";
     delete newBoards;
 }
 
 int main(void) {
     std::cout << "Move Generation Tests: \n";
-    testPawnMoves();
+    testBishopMoves();
     return 0;
 }

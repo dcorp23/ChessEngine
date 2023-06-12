@@ -69,6 +69,7 @@ class MoveGenerator {
 
         bool isBoardValid(Board board) {
             map king = board.bitMaps[board.state.whiteToMove ? 11 : 5];
+            if (king == 0ULL) return true; //if there is no king it is a valid board for tests
             int kingSquare = getLSBIndex(king);
             return !(isSquareAttacked(kingSquare, board.state.whiteToMove, board, board.All));
         }
