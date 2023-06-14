@@ -14,6 +14,13 @@ class MoveGenerator {
             move.endSquare = endSquare;
             move.piece = piece;
             move.capture = capture;
+            move.promotion = 0;
+            move.whiteLong = 0;
+            move.whiteShort = 0;
+            move.blackLong = 0;
+            move.blackShort = 0;
+            move.enPassantSquare = 0;
+            move.enPassantFlag = 0;
             return move;
         }
 
@@ -89,7 +96,8 @@ class MoveGenerator {
             
             if (board.state.whiteToMove) {
                 beforeMove = board.bitMaps[WPawn];
-                for (int pawns = 0; pawns < getBitCount(board.bitMaps[WPawn]); pawns++) {
+                int numberOfPawns = getBitCount(board.bitMaps[WPawn]);
+                for (int pawns = 0; pawns < numberOfPawns; pawns++) {
                     int startSquare = getLSBIndex(beforeMove);
                     beforeMove = popLSB(beforeMove);
                     
@@ -113,10 +121,12 @@ class MoveGenerator {
                             }
                         }
                         //check for enpassant
-                        if (attackSquare == board.state.enPassant) {
-                            move = createMove(startSquare, attackSquare, 0, 1);
-                            move.enPassantFlag = 1;
-                            moveList.push_back(move);
+                        if (board.state.enPassant != 0) {
+                            if (attackSquare == board.state.enPassant) {
+                                move = createMove(startSquare, attackSquare, 0, 1);
+                                move.enPassantFlag = 1;
+                                moveList.push_back(move);
+                            }
                         }
                     }
 
@@ -146,7 +156,8 @@ class MoveGenerator {
             }
             else {
                 beforeMove = board.bitMaps[BPawn];
-                for (int i = 0; i < getBitCount(board.bitMaps[BPawn]); i++) {
+                int numberOfPawns = getBitCount(board.bitMaps[BPawn]);
+                for (int i = 0; i < numberOfPawns; i++) {
                     int startSquare = getLSBIndex(beforeMove);
                     beforeMove = popLSB(beforeMove);
 
@@ -169,11 +180,14 @@ class MoveGenerator {
                                 moveList.push_back(move);
                             }
                         }
+
                         //check for enpassant
-                        if (attackSquare == board.state.enPassant) {
-                            move = createMove(startSquare, attackSquare, 0, 1);
-                            move.enPassantFlag = 1;
-                            moveList.push_back(move);
+                        if (board.state.enPassant != 0) {
+                            if (attackSquare == board.state.enPassant) {
+                                move = createMove(startSquare, attackSquare, 0, 1);
+                                move.enPassantFlag = 1;
+                                moveList.push_back(move);
+                            }
                         }
                     }
 
@@ -455,14 +469,11 @@ class MoveGenerator {
         }
 
         std::vector<Board>* validateAllMoves(Board board, std::vector<MoveCode> moveList) {
-            int boardCount = 0;
             std::vector<Board>* validBoards = new std::vector<Board>;
-            int moveCount = moveList.size();
-            for (int i = 0; i < moveCount; i++) {
-                Board newBoard = board.move(moveList[i]);
+            for (int i = 0; i < moveList.size(); i++) {
+                Board newBoard = board.move(moveList.at(i));
                 if (isBoardValid(newBoard)) {
                     validBoards->push_back(newBoard);
-                    boardCount++;
                 }
             }
             return validBoards;
@@ -564,13 +575,12 @@ class MoveGenerator {
         }
 
         std::vector<Board>* getAllLegalBoards(Board board) {
-            std::vector<MoveCode> moveList;
-            moveList = calculateAllMoves(board);
+            std::vector<MoveCode> moveList = calculateAllMoves(board);
             std::vector<Board>* validBoards = validateAllMoves(board, moveList);
             int boardIndex = 0;
             int vectorSize = validBoards->size();
             for (int i = 0; i < vectorSize; i++) {
-                Board currentBoard = (*validBoards)[boardIndex];
+                Board currentBoard = validBoards->at(i);
                 if (isBoardCheck(currentBoard)) {
                     currentBoard.state.check = 1;
                     if (isBoardCheckMate(currentBoard)) {

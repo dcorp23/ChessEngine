@@ -80,6 +80,15 @@ struct MoveCode {
     unsigned int enPassantSquare: 6; //square that is enPassant able when moving double
                             //0 is no enpassant because you can't enpassant on a8 anyway
     unsigned int enPassantFlag: 1; //if the move was enPassant
+
+    void printCode() {
+        std::cout << " Piece: " << this->piece;
+        std::cout << " Start: " << this->startSquare;
+        std::cout << " End: " << this->endSquare;
+        std::cout << " Capture: " << this->capture;
+        std::cout << " Promotion: " << this->promotion;
+        std::cout << '\n';
+    }
 };
 
 struct Board {
@@ -210,7 +219,7 @@ struct Board {
             }
         }
 
-        currentString = fenParts[2];
+        currentString = fenParts[3];
         stringLength = currentString.length();
         if (currentString[0] == '-') {
             newState.enPassant = 0;
@@ -218,7 +227,7 @@ struct Board {
             int column = (int)(currentString[0] - 97);
             int row = (int)(currentString[1] - 48);
 
-            newState.enPassant = (row * 8) + column;
+            newState.enPassant = ((8 - row) * 8) + column;
         }
 
         White = 0ULL;
@@ -234,15 +243,44 @@ struct Board {
         state = newState;
     }
 
-    //constructor for making a move
-    Board(int piece, int side, map newPieceMap, int secondPiece, map secondPieceMap, Board* board, BoardState newState) {
+    //constructor for making a move thats not a promotion
+    Board(int piece, int side, map newPieceMap, int secondPiece, map secondPieceMap, Board* board, BoardState newState, int capture) {
         for (int i = WPawn; i <= BKing; i++) {
             bitMaps[i] = board->bitMaps[i];
         }
 
         bitMaps[piece + (side ? 0 : 6)] = newPieceMap;
         if (secondPieceMap != 0ULL) bitMaps[secondPiece] = secondPieceMap;
+        else if (capture) bitMaps[secondPiece] = secondPieceMap;
 
+        White = 0ULL;
+        Black = 0ULL;
+        for (int i = WPawn; i <= WKing; i++) {
+            White |= bitMaps[i];
+        }
+        for (int i = BPawn; i <= BKing; i++) {
+            Black |= bitMaps[i];
+        }
+        All = White | Black;
+        
+        state = newState;
+    }
+
+    //Constructor for promotions only
+    Board(int side, map newPawnMap, int promotionPiece, map promotionPieceMap, int capturedPiece, map captureMap, Board* board, BoardState newState, int capture) {
+        for (int i = WPawn; i <= BKing; i++) {
+            bitMaps[i] = board->bitMaps[i];
+        }
+
+        //set the pawn map
+        bitMaps[side ? 0 : 6] = newPawnMap;
+        //set the promoted piece
+        bitMaps[promotionPiece + (side ? 0 : 6)] = promotionPieceMap;
+        //remove the captured piece
+        if (capture == 1) {
+            bitMaps[capturedPiece] = captureMap;
+        }
+        
         White = 0ULL;
         Black = 0ULL;
         for (int i = WPawn; i <= WKing; i++) {
@@ -303,16 +341,30 @@ struct Board {
             pieceMap ^= (1ULL << code.endSquare);
             map newPieceMap = bitMaps[code.promotion + (state.whiteToMove ? 0 : 6)];
             newPieceMap ^= (1ULL << code.endSquare);
+            if (code.capture == 0) return Board(state.whiteToMove, pieceMap, code.promotion, newPieceMap, 0, 0ULL, this, newState, 0);
+            
+            map captureMap = 0ULL;
+            captureMap |= (1ULL << code.endSquare);
 
-            return Board(code.piece, state.whiteToMove, pieceMap, code.promotion + (state.whiteToMove ? 0 : 6), newPieceMap, this, newState);
+            int startPiece = state.whiteToMove ? 6 : 0;
+            int endPiece = state.whiteToMove ? 12 : 6;
+            int secondPiece = 0;
+            for (int i = startPiece; i < endPiece; i++) {
+                if (captureMap & bitMaps[i]) {
+                    captureMap ^= bitMaps[i];
+                    secondPiece = i;
+                }
+            }
+
+            return Board(state.whiteToMove, pieceMap, code.promotion, newPieceMap, secondPiece, captureMap, this, newState, 1);
         }
 
         //enPassant
         if(code.enPassantFlag) {
             map captureMap = (1ULL << (state.enPassant + (state.whiteToMove ? 8 : -8)));
-            captureMap ^= bitMaps[0 + (state.whiteToMove ? 6 : 0)];
+            captureMap ^= bitMaps[state.whiteToMove ? 6 : 0];
 
-            return Board(code.piece, state.whiteToMove, pieceMap, 0 + (state.whiteToMove ? 6 : 0), captureMap, this, newState);
+            return Board(code.piece, state.whiteToMove, pieceMap, state.whiteToMove ? 6 : 0, captureMap, this, newState, 1);
         }
 
         //check for captures
@@ -329,7 +381,7 @@ struct Board {
                 }
             }
 
-            return Board(code.piece, state.whiteToMove, pieceMap, secondPiece,captureMap, this, newState);
+            return Board(code.piece, state.whiteToMove, pieceMap, secondPiece,captureMap, this, newState, 1);
         }
 
         //long castle
@@ -338,7 +390,7 @@ struct Board {
             rookMap <<= code.whiteLong ? a1 : a8;
             rookMap ^= bitMaps[3 + (code.whiteLong ? 0 : 6)];
 
-            return Board(code.piece, state.whiteToMove, pieceMap, 3 + (state.whiteToMove ? 0 : 6), rookMap, this, newState);
+            return Board(code.piece, state.whiteToMove, pieceMap, 3 + (state.whiteToMove ? 0 : 6), rookMap, this, newState, 0);
         }
 
         //short castle
@@ -347,11 +399,11 @@ struct Board {
             rookMap <<= code.whiteShort ? f1 : f8;
             rookMap ^= bitMaps[3 + (code.whiteShort ? 0 : 6)];
 
-            return Board(code.piece, state.whiteToMove, pieceMap, 3 + (state.whiteToMove ? 0 : 6), rookMap, this, newState);
+            return Board(code.piece, state.whiteToMove, pieceMap, 3 + (state.whiteToMove ? 0 : 6), rookMap, this, newState, 0);
         }
         
         //quiet moves
-        return Board(code.piece, state.whiteToMove, pieceMap, 0, 0ULL, this, newState);
+        return Board(code.piece, state.whiteToMove, pieceMap, 0, 0ULL, this, newState, 0);
     };
 
     void printBoard() {
@@ -385,7 +437,15 @@ struct Board {
         }
     };
 
+    //tests if all the bitmaps are the same doesn't check the state
     bool isEqual(Board board) {
-        return this->All == board.All;
+        if (this->White != board.White) return false;
+        if (this->Black != board.Black) return false;
+        if (this->All != board.All) return false;
+        for (int i = WPawn; i <= BKing; i++) {
+            if (this->bitMaps[i] != board.bitMaps[i]) return false;
+        }
+        if (this->state.whiteToMove != board.state.whiteToMove) return false;
+        return true;
     }
 };
