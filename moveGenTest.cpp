@@ -8,7 +8,7 @@ static MoveGenerator moveGen = MoveGenerator();
 
 //each depth is 1 move for 1 side so depth 6 would total 3 moves white 3 moves black
 //boards is a pointer to a vector with 1 starting baord
-std::vector<Board>* getBoardsAtDepth(std::vector<Board>* boards, int depth) {
+std::vector<Board>* timeBoardsAtDepth(std::vector<Board>* boards, int depth) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     if (depth == 0) {
         return boards;
@@ -19,36 +19,23 @@ std::vector<Board>* getBoardsAtDepth(std::vector<Board>* boards, int depth) {
         int numberOfBoards = boards->size();
         for (int boardIndex = 0; boardIndex < numberOfBoards; boardIndex++) {
             currentBoard = boards->at(boardIndex);
-            newBoards = moveGen.getAllLegalBoards(currentBoard);
-            allNewBoards->insert(allNewBoards->end(), newBoards->begin(), newBoards->end());
-            delete newBoards;
+            if (currentBoard.state.checkMate != 1) {
+                newBoards = moveGen.getAllLegalBoards(currentBoard);
+                allNewBoards->insert(allNewBoards->end(), newBoards->begin(), newBoards->end());
+                delete newBoards;
+            }
         }
 
         delete boards;
 
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-        std::cout << "Layer " << depth << " Completed" << '\n';
         std::cout << allNewBoards->size() << " Boards Found\n";
         std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
-        return getBoardsAtDepth(allNewBoards, depth - 1);
+        return timeBoardsAtDepth(allNewBoards, depth - 1);
     }
 }
 
 bool testForCorrectBoards(std::vector<Board>* actual, std::vector<Board> expected, int expectedSize) {
-    /*     
-    {//push the expected boards to the test boards
-        testBoards.push_back(Board(""));
-        testBoards.push_back(Board(""));
-        testBoards.push_back(Board(""));
-        testBoards.push_back(Board(""));
-        testBoards.push_back(Board(""));
-        testBoards.push_back(Board(""));
-        testBoards.push_back(Board(""));
-        testBoards.push_back(Board(""));
-    }
-    assert(true == testForCorrectBoards(newBoards, testBoards, x));
-    testBoards.clear();
-    */
     if (actual->size() != expectedSize) {
         std::cout << "Acutal Size: " << actual->size() << "Expected Size: " << expectedSize << '\n';
     };
@@ -689,6 +676,278 @@ void testKingMoves() {
     std::cout << "King Tests Passed\n\n";
 }
 
+void testChecks() {
+    std::cout << "Testing Checks: 6 Checkpoints\n";
+    Board board;
+    int numberOfChecks;
+    std::vector<Board>* newBoards;
+
+    //3 rooks with 2 checks each
+    board = Board("7k/8/8/8/8/R7/1R6/2R5 w - d3 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfChecks = 0;
+    for (int i = 0; i < newBoards->size(); i++) {
+        if (newBoards->at(i).state.check == 1) numberOfChecks++;
+    }
+    assert(numberOfChecks == 6);
+    delete newBoards;
+    std::cout << "Checkpoint #1\n";
+
+    //all the pieces have a few checks each
+    board = Board("6N1/8/8/3k4/8/4P3/2P4R/1Q3B2 w - d3 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfChecks = 0;
+    for (int i = 0; i < newBoards->size(); i++) {
+        if (newBoards->at(i).state.check == 1) numberOfChecks++;
+    }
+    assert(numberOfChecks == 13);
+    delete newBoards;
+    std::cout << "Checkpoint #2\n";
+
+    //discovered checks
+    board = Board("8/8/3k1P1R/8/5N2/3N4/7B/3R4 w - d3 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfChecks = 0;
+    for (int i = 0; i < newBoards->size(); i++) {
+        if (newBoards->at(i).state.check == 1) numberOfChecks++;
+    }
+    assert(numberOfChecks == 15);
+    delete newBoards;
+    std::cout << "Checkpoint #3\n";
+
+    //knight promotions
+    board = Board("8/1P1k1P2/8/8/8/8/8/8 w - d3 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfChecks = 0;
+    for (int i = 0; i < newBoards->size(); i++) {
+        if (newBoards->at(i).state.check == 1) numberOfChecks++;
+    }
+    assert(numberOfChecks == 2);
+    delete newBoards;
+    std::cout << "Checkpoint #4\n";
+
+    //rook and queen promotions
+    board = Board("3k4/1P3P2/8/8/8/8/8/8 w - d3 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfChecks = 0;
+    for (int i = 0; i < newBoards->size(); i++) {
+        if (newBoards->at(i).state.check == 1) numberOfChecks++;
+    }
+    assert(numberOfChecks == 4);
+    delete newBoards;
+    std::cout << "Checkpoint #5\n";
+
+    //long castle check
+    board = Board("3k4/8/8/8/8/8/8/R3K3 w Q - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfChecks = 0;
+    for (int i = 0; i < newBoards->size(); i++) {
+        if (newBoards->at(i).state.check == 1) numberOfChecks++;
+    }
+    assert(numberOfChecks == 3);
+    delete newBoards;
+    std::cout << "Checkpoint #6\n";
+
+    std::cout << "Check Tests Passed\n\n";
+}
+
+void testCheckmates() {
+    std::cout << "Testing Checkmate: 6 Checkpoints\n";
+    Board board;
+    int numberOfCheckmates;
+    std::vector<Board>* newBoards;
+
+    //5 rooks each with mate in 1
+    board = Board("8/5K1k/8/R7/R7/R7/R7/R7 w - d3 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfCheckmates = 0;
+    for (int i = 0; i < newBoards->size(); i++) {
+        if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;
+    }
+    assert(numberOfCheckmates == 5);
+    delete newBoards;
+    std::cout << "Checkpoint #1\n";
+
+    //queen with 3 checks that are not checkmate
+    board = Board("8/8/8/2ppp2Q/2pk4/2ppp3/8/8 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfCheckmates = 0;
+    for (int i = 0; i < newBoards->size(); i++) {
+        if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;
+    }
+    assert(numberOfCheckmates == 0);
+    delete newBoards;
+    std::cout << "Checkpoint #2\n";
+
+    //3 smothered mates in the corner
+    board = Board("8/8/8/8/6n1/3n4/6PP/3n2RK b - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfCheckmates = 0;
+    for (int i = 0; i < newBoards->size(); i++) {
+        if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;
+    }
+    assert(numberOfCheckmates == 3);
+    delete newBoards;
+    std::cout << "Checkpoint #3\n";
+
+    //that one opening with a smothered mate in the middle of the board
+    board = Board("r1b1kbnr/pppp1Npp/8/8/3nq3/8/PPPPBP1P/RNBQKR2 b Qkq - 1 7");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfCheckmates = 0;
+    for (int i = 0; i < newBoards->size(); i++) {
+        if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;
+    }
+    assert(numberOfCheckmates == 1);
+    delete newBoards;
+    std::cout << "Checkpoint #4\n";
+
+    //1B1Q1Q2/2R5/pQ4QN/RB2k3/1Q5Q/N4Q2/K2Q4/6Q1
+    //puzzle with a bunch of mate in 1s
+    board = Board("1B1Q1Q2/2R5/pQ4QN/RB2k3/1Q5Q/N4Q2/K2Q4/6Q1 w - - 0 1");
+    newBoards = moveGen.getAllLegalBoards(board);
+    numberOfCheckmates = 0;
+    for (int i = 0; i < newBoards->size(); i++) {
+        if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;
+    }
+    assert(numberOfCheckmates == 105);
+    delete newBoards;
+    std::cout << "Checkpoint #5\n";
+
+    std::cout << "Checkmate Tests Passed\n\n";
+}
+
+void testNumberOfBoardsAtDepth5() {
+    Board board = Board(startingFEN);
+    int numberOfBoards;
+    int numberOfChecks;
+    int numberOfCheckmates;
+
+    const int depth1Boards = 20;
+    const int depth1Checks = 0;
+    const int depth1Checkmates = 0;
+    std::vector<Board>* boards = new std::vector<Board>;
+    boards->push_back(board);
+
+    boards = timeBoardsAtDepth(boards, 1);
+    numberOfBoards = boards->size();
+    numberOfChecks = 0;
+    numberOfCheckmates = 0;
+    for (int i = 0; i < numberOfBoards; i++) {
+        if (boards->at(i).state.check) numberOfChecks++;
+        if (boards->at(i).state.checkMate) numberOfCheckmates++;
+    }
+
+    assert(depth1Boards == numberOfBoards);
+    std::cout << "Depth 1 number of boards correct\n";
+    assert(depth1Checks == numberOfChecks);
+    std::cout << "Depth 1 number of checks correct\n";
+    assert(depth1Checkmates == numberOfCheckmates);
+    std::cout << "Depth 1 number of checkmates correct\n";
+    std::cout << '\n';
+
+    //=============================
+    //=============================
+    const int depth2Boards = 400;
+    const int depth2Checks = 0;
+    const int depth2Checkmates = 0;
+
+    boards = timeBoardsAtDepth(boards, 1);
+    numberOfBoards = boards->size();
+    numberOfChecks = 0;
+    numberOfCheckmates = 0;
+    for (int i = 0; i < numberOfBoards; i++) {
+        if (boards->at(i).state.check) numberOfChecks++;
+        if (boards->at(i).state.checkMate) numberOfCheckmates++;
+    }
+
+    assert(depth2Boards == numberOfBoards);
+    std::cout << "Depth 2 number of boards correct\n";
+    assert(depth2Checks == numberOfChecks);
+    std::cout << "Depth 2 number of checks correct\n";
+    assert(depth2Checkmates == numberOfCheckmates);
+    std::cout << "Depth 2 number of checkmates correct\n";
+    std::cout << '\n';
+
+    //=============================
+    //=============================
+    const int depth3Boards = 8902;
+    const int depth3Checks = 12;
+    const int depth3Checkmates = 0;
+
+    boards = timeBoardsAtDepth(boards, 1);
+    numberOfBoards = boards->size();
+    numberOfChecks = 0;
+    numberOfCheckmates = 0;
+    std::cout << (boards->at(2).state.whiteToMove ? "white to move" : "black to move") << '\n';
+    for (int i = 0; i < numberOfBoards; i++) {
+        if (boards->at(i).state.check) numberOfChecks++;
+        if (boards->at(i).state.checkMate) numberOfCheckmates++;
+    }
+    
+    assert(depth3Boards == numberOfBoards);
+    std::cout << "Depth 3 number of boards correct\n";
+    assert(depth3Checks == numberOfChecks);
+    std::cout << "Depth 3 number of checks correct\n";
+    assert(depth3Checkmates == numberOfCheckmates);
+    std::cout << "Depth 3 number of checkmates correct\n";
+    std::cout << '\n';
+
+    //=============================
+    //=============================
+    const int depth4Boards = 197281;
+    const int depth4Checks = 469;
+    const int depth4Checkmates = 8;
+
+    boards = timeBoardsAtDepth(boards, 1);
+    numberOfBoards = boards->size();
+    numberOfChecks = 0;
+    numberOfCheckmates = 0;
+    for (int i = 0; i < numberOfBoards; i++) {
+        if (boards->at(i).state.check) numberOfChecks++;
+        if (boards->at(i).state.checkMate) numberOfCheckmates++;
+    }
+
+    assert(depth4Boards == numberOfBoards);
+    std::cout << "Depth 4 number of boards correct\n";
+    assert(depth4Checks == numberOfChecks);
+    std::cout << "Depth 4 number of checks correct\n";
+    assert(depth4Checkmates == numberOfCheckmates);
+    std::cout << "Depth 4 number of checkmates correct\n";
+    std::cout << '\n';
+
+    //=============================
+    //=============================
+    const int depth5Boards = 4865609;
+    const int depth5Checks = 27351;
+    const int depth5Checkmates = 347;
+
+    boards = timeBoardsAtDepth(boards, 1);
+    numberOfBoards = boards->size();
+    numberOfChecks = 0;
+    numberOfCheckmates = 0;
+    std::cout << (boards->at(4).state.whiteToMove ? "white to move\n" : "black to move\n");
+    for (int i = 0; i < numberOfBoards; i++) {
+        if (boards->at(i).state.check) numberOfChecks++;
+        if (boards->at(i).state.checkMate) {
+            if (numberOfCheckmates > 500 && numberOfCheckmates < 600) {
+                boards->at(i).printBoard();
+                std::cout << '\n';
+            }
+            numberOfCheckmates++;
+        }
+    }
+    
+    assert(depth5Boards == numberOfBoards);
+    std::cout << "Depth 5 number of boards correct\n";
+    assert(depth5Checks == numberOfChecks);
+    std::cout << "Depth 5 number of checks correct\n";
+    assert(depth5Checkmates == numberOfCheckmates);
+    std::cout << "Depth 5 number of checkmates correct\n";
+    std::cout << '\n';
+
+    delete boards;
+}
+
 int main(void) {
     std::cout << "Move Generation Tests: \n";
     testPawnMoves();
@@ -697,10 +956,9 @@ int main(void) {
     testRookMoves();
     testQueenMoves();
     testKingMoves();
-    Board board = Board(startingFEN);
-    std::vector<Board>* boards = new std::vector<Board>;
-    boards->push_back(board);
-    getBoardsAtDepth(boards, 6);
-    delete boards;
+    testChecks();
+    testCheckmates();
+    testNumberOfBoardsAtDepth5();
+    
     return 0;
 }
