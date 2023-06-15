@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "attackTables.hpp"
+#include "bitFunctions.hpp"
 #include "chessBoard.hpp"
 #include "moveGen.hpp"
 

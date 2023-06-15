@@ -2,6 +2,7 @@
 #include <vector>
 #include <chrono>
 #include <cassert>
+#include "bitFunctions.hpp"
 #include "attackTables.hpp"
 #include "chessBoard.hpp"
 #include "moveGen.hpp"
