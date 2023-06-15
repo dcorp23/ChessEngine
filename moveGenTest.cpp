@@ -2,7 +2,9 @@
 #include <vector>
 #include <chrono>
 #include <cassert>
-#include "moveGen.cpp"
+#include "attackTables.hpp"
+#include "chessBoard.hpp"
+#include "moveGen.hpp"
 
 static MoveGenerator moveGen = MoveGenerator();
 
@@ -752,7 +754,7 @@ void testChecks() {
 }
 
 void testCheckmates() {
-    std::cout << "Testing Checkmate: 6 Checkpoints\n";
+    std::cout << "Testing Checkmate: 5 Checkpoints\n";
     Board board;
     int numberOfCheckmates;
     std::vector<Board>* newBoards;
@@ -845,8 +847,6 @@ void testNumberOfBoardsAtDepth5() {
     std::cout << "Depth 1 number of checkmates correct\n";
     std::cout << '\n';
 
-    //=============================
-    //=============================
     const int depth2Boards = 400;
     const int depth2Checks = 0;
     const int depth2Checkmates = 0;
@@ -868,8 +868,6 @@ void testNumberOfBoardsAtDepth5() {
     std::cout << "Depth 2 number of checkmates correct\n";
     std::cout << '\n';
 
-    //=============================
-    //=============================
     const int depth3Boards = 8902;
     const int depth3Checks = 12;
     const int depth3Checkmates = 0;
@@ -878,7 +876,6 @@ void testNumberOfBoardsAtDepth5() {
     numberOfBoards = boards->size();
     numberOfChecks = 0;
     numberOfCheckmates = 0;
-    std::cout << (boards->at(2).state.whiteToMove ? "white to move" : "black to move") << '\n';
     for (int i = 0; i < numberOfBoards; i++) {
         if (boards->at(i).state.check) numberOfChecks++;
         if (boards->at(i).state.checkMate) numberOfCheckmates++;
@@ -892,8 +889,6 @@ void testNumberOfBoardsAtDepth5() {
     std::cout << "Depth 3 number of checkmates correct\n";
     std::cout << '\n';
 
-    //=============================
-    //=============================
     const int depth4Boards = 197281;
     const int depth4Checks = 469;
     const int depth4Checkmates = 8;
@@ -915,8 +910,6 @@ void testNumberOfBoardsAtDepth5() {
     std::cout << "Depth 4 number of checkmates correct\n";
     std::cout << '\n';
 
-    //=============================
-    //=============================
     const int depth5Boards = 4865609;
     const int depth5Checks = 27351;
     const int depth5Checkmates = 347;
