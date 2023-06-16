@@ -943,6 +943,7 @@ void testNumberOfBoardsAtDepth5() {
 }
 
 int main(void) {
+    AttackTables::initAttackTables();
     std::cout << "Move Generation Tests: \n";
     testPawnMoves();
     testBishopMoves();

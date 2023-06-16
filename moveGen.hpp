@@ -6,8 +6,6 @@
 
 class MoveGenerator {
     private: 
-        AttackTables attackTable;
-
         //everything outside this is set seperately for special moves
         MoveCode createMove(int startSquare, int endSquare, int piece, int capture);
 
