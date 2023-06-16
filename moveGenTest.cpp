@@ -7,8 +7,6 @@
 #include "chessBoard.hpp"
 #include "moveGen.hpp"
 
-static MoveGenerator moveGen = MoveGenerator();
-
 //each depth is 1 move for 1 side so depth 6 would total 3 moves white 3 moves black
 //boards is a pointer to a vector with 1 starting baord
 std::vector<Board>* timeBoardsAtDepth(std::vector<Board>* boards, int depth) {
@@ -23,7 +21,7 @@ std::vector<Board>* timeBoardsAtDepth(std::vector<Board>* boards, int depth) {
         for (int boardIndex = 0; boardIndex < numberOfBoards; boardIndex++) {
             currentBoard = boards->at(boardIndex);
             if (currentBoard.state.checkMate != 1) {
-                newBoards = moveGen.getAllLegalBoards(currentBoard);
+                newBoards = MoveGenerator::getAllLegalBoards(currentBoard);
                 allNewBoards->insert(allNewBoards->end(), newBoards->begin(), newBoards->end());
                 delete newBoards;
             }
@@ -71,7 +69,7 @@ void testPawnMoves() {
 
     //pawns on starting square
     board = Board("8/8/8/8/8/8/PPPPPPPP/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/8/8/P7/1PPPPPPP/8 b - - 0 1"));
@@ -98,7 +96,7 @@ void testPawnMoves() {
 
     //pawns on starting square knights blocking pushing 2 squares
     board = Board("8/8/8/8/nnnnnnnn/8/PPPPPPPP/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/8/nnnnnnnn/P7/1PPPPPPP/8 b - - 0 1"));
@@ -117,7 +115,7 @@ void testPawnMoves() {
 
     //2 rows of pawns
     board = Board("8/8/8/8/8/PPPPPPPP/PPPPPPPP/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/8/P7/1PPPPPPP/PPPPPPPP/8 b - - 0 1"));
@@ -136,7 +134,7 @@ void testPawnMoves() {
 
     //pawns on starting squares with knights in front of them
     board = Board("8/8/8/8/8/nnnnnnnn/PPPPPPPP/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/8/8/nPnnnnnn/1PPPPPPP/8 b - - 0 1"));
@@ -161,7 +159,7 @@ void testPawnMoves() {
 
     //8 pawns 1 square from promotion
     board = Board("8/PPPPPPPP/8/8/8/8/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("Q7/1PPPPPPP/8/8/8/8/8/8 b - - 0 1"));
@@ -183,7 +181,7 @@ void testPawnMoves() {
 
     //8 pawns 1 square from promotion with a knights in front of them
     board = Board("nnnnnnnn/PPPPPPPP/8/8/8/8/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("nQnnnnnn/1PPPPPPP/8/8/8/8/8/8 b - - 0 1"));
@@ -203,7 +201,7 @@ void testPawnMoves() {
 
     //random captures
     board = Board("5nn1/5P2/2nn4/1n1Pn1n1/1P3P2/8/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("5nn1/5P2/2nn4/1n1PnPn1/1P6/8/8/8 b - - 0 1"));
@@ -219,7 +217,7 @@ void testPawnMoves() {
 
     //en passant
     board = Board("8/8/5P2/3PpP2/8/8/8/8 w - e6 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/4PP2/5P2/8/8/8/8 b - - 0 1"));
@@ -236,7 +234,7 @@ void testPawnMoves() {
 
     //pawns on starting square
     board = Board("8/pppppppp/8/8/8/8/8/8 b - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/1ppppppp/8/p7/8/8/8/8 w - - 0 1"));
@@ -255,7 +253,7 @@ void testPawnMoves() {
 
     //pawns on starting square knights blocking pushing 2 squares
     board = Board("8/pppppppp/8/NNNNNNNN/8/8/8/8 b - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/ppppppp1/7p/NNNNNNNN/8/8/8/8 w - - 0 1"));
@@ -270,7 +268,7 @@ void testPawnMoves() {
 
     //2 rows of pawns
     board = Board("8/pppppppp/pppppppp/8/8/8/8/8 b - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/pppppppp/1ppppppp/p7/8/8/8/8 w - - 0 1"));
@@ -286,7 +284,7 @@ void testPawnMoves() {
 
     //pawns on starting squares with knights in front of them
     board = Board("8/pppppppp/NNNNNNNN/8/8/8/8/8 b - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/pp1ppppp/NNNpNNNN/8/8/8/8/8 w - - 0 1"));
@@ -303,7 +301,7 @@ void testPawnMoves() {
 
     //8 pawns 1 square from promotion
     board = Board("8/8/8/8/8/8/pppppppp/8 b - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/8/8/8/ppp1pppp/3b4 w - - 0 1"));
@@ -320,7 +318,7 @@ void testPawnMoves() {
 
     //8 pawns 1 square from promotion with a knights in front of them
     board = Board("8/8/8/8/8/8/pppppppp/NNNNNNNN b - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/8/8/8/1ppppppp/NqNNNNNN w - - 0 1"));
@@ -338,7 +336,7 @@ void testPawnMoves() {
 
     //random captures
     board = Board("8/8/8/2p3p1/1N1Np1N1/4NN2/2p5/1NN5 b - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/6p1/1NpNp1N1/4NN2/2p5/1NN5 w - - 0 1"));
@@ -354,7 +352,7 @@ void testPawnMoves() {
 
     //en passant
     board = Board("8/8/8/8/2pPp3/2p5/8/8 b - d3 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/8/2pP4/2p1p3/8/8 w - d3 0 1"));
@@ -378,7 +376,7 @@ void testBishopMoves() {
 
     //bishops on starting square
     board = Board("8/8/8/8/8/8/8/2B2B2 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 14);
     delete newBoards;
@@ -386,7 +384,7 @@ void testBishopMoves() {
 
     //bishops blocked in center
     board = Board("8/8/2PPPP2/2PBBP2/2PBBP2/2PPPP2/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 4);
     delete newBoards;
@@ -394,7 +392,7 @@ void testBishopMoves() {
 
     //bishops randomly blocked
     board = Board("6B1/6P1/3P4/1P6/BBBB4/1P2P3/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 27);
     delete newBoards;
@@ -402,7 +400,7 @@ void testBishopMoves() {
 
     //bishops captures
     board = Board("8/8/2pppp2/2pBBp2/2pBBp2/2pppp2/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 12);
     delete newBoards;
@@ -410,7 +408,7 @@ void testBishopMoves() {
 
     //random bishops captures
     board = Board("8/3p3p/1p6/2B2B2/1n4n1/3p4/5n2/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 15);
     delete newBoards;
@@ -427,7 +425,7 @@ void testKnightMoves() {
 
     //knights on starting squares
     board = Board("8/8/8/8/8/8/8/1N4N1 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 6);
     delete newBoards;
@@ -435,7 +433,7 @@ void testKnightMoves() {
 
     //knight with all squares blocked by team pawns and they can't move
     board = Board("2n1n3/1nP1Pn2/1P3P2/1n1N1n2/1Pn1nP2/2P1P3/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 0);
     delete newBoards;
@@ -443,7 +441,7 @@ void testKnightMoves() {
 
     //knight with all squares blocked by enemy pawns
     board = Board("8/2p1p3/1p3p2/3N4/1p3p2/2p1p3/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 8);
     delete newBoards;
@@ -451,7 +449,7 @@ void testKnightMoves() {
 
     //knight with both squares taken by team pawns and enemy pawns
     board = Board("4n1n1/4P1Pn/3p3P/5N1n/3p3P/4p1p1/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 4);
     delete newBoards;
@@ -459,7 +457,7 @@ void testKnightMoves() {
 
     //black knight blocked by all team pawns
     board = Board("8/2p1p3/1pN1Np2/1N1n1N2/1p3p2/1Np1pN2/2N1N3/8 b - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 0);
     delete newBoards;
@@ -467,7 +465,7 @@ void testKnightMoves() {
 
     //8 white knights in a row
     board = Board("8/8/8/8/NNNNNNNN/8/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 52);
     delete newBoards;
@@ -475,7 +473,7 @@ void testKnightMoves() {
 
     //8 black knights in a row
     board = Board("8/8/8/nnnnnnnn/8/8/8/8 b - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 52);
     delete newBoards;
@@ -492,7 +490,7 @@ void testRookMoves() {
 
     //Rooks on their starting squares
     board = Board("8/8/8/8/8/8/8/R6R w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 26);
     delete newBoards;
@@ -500,7 +498,7 @@ void testRookMoves() {
 
     //Rooks blocked in the center by pawns
     board = Board("8/8/2PPPP2/2PRRP2/2PRRP2/2PPPP2/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 4);
     delete newBoards;
@@ -508,7 +506,7 @@ void testRookMoves() {
 
     //Rooks blocked by enemy knights to test captures
     board = Board("8/8/4n3/8/2n1R2n/4n3/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 8);
     delete newBoards;
@@ -516,7 +514,7 @@ void testRookMoves() {
 
     //Random blocks and captures for white rooks
     board = Board("7n/2n2R1P/2P5/8/2R2q2/2R5/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 23);
     delete newBoards;
@@ -524,7 +522,7 @@ void testRookMoves() {
 
     //Random blocks and captures for black rooks
     board = Board("6N1/3Q2r1/8/6N1/1N1r4/3p4/3N2r1/8 b - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 24);
     delete newBoards;
@@ -541,7 +539,7 @@ void testQueenMoves() {
 
     //Queen on starting square
     board = Board("8/8/8/8/8/8/8/3Q4 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 21);
     delete newBoards;
@@ -549,7 +547,7 @@ void testQueenMoves() {
 
     //Queens in the center blocked by team pawns
     board = Board("8/8/2PPPP2/2PQQP2/2PQQP2/2PPPP2/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 4);
     delete newBoards;
@@ -557,7 +555,7 @@ void testQueenMoves() {
 
     //Queens in the center blocked by enemy knights
     board = Board("8/8/2nnnn2/2nQQn2/2nQQn2/2nnnn2/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 20);
     delete newBoards;
@@ -565,7 +563,7 @@ void testQueenMoves() {
 
     //White queens randomly blocked by team and enemy pieces
     board = Board("5n2/2n1nPn1/1n4P1/1P2QQ2/4PP2/1n6/1P6/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 18);
     delete newBoards;
@@ -573,7 +571,7 @@ void testQueenMoves() {
 
     //Black queens randomly blocked by team and enemy pieces
     board = Board("8/8/N2q2p1/6P1/1N1p4/3N2q1/8/q5N1 b - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 43);
     delete newBoards;
@@ -581,7 +579,7 @@ void testQueenMoves() {
 
     //Queens on the long dark square diagonal
     board = Board("7Q/6Q1/5Q2/4Q3/3Q4/2Q5/1Q6/Q7 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 136);
     delete newBoards;
@@ -598,7 +596,7 @@ void testKingMoves() {
 
     //King on the starting square
     board = Board("8/8/8/8/8/8/8/4K3 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 5);
     delete newBoards;
@@ -606,7 +604,7 @@ void testKingMoves() {
 
     //King in the center
     board = Board("8/8/8/4K3/8/8/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 8);
     delete newBoards;
@@ -614,7 +612,7 @@ void testKingMoves() {
 
     //King in the center blocked by team pawns
     board = Board("8/8/3PPP2/3PKP2/3PPP2/8/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 3);
     delete newBoards;
@@ -622,7 +620,7 @@ void testKingMoves() {
 
     //King in the center blocked by 4 enemy kings
     board = Board("8/8/4k3/8/2k1K1k1/8/4k3/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 0);
     delete newBoards;
@@ -630,7 +628,7 @@ void testKingMoves() {
 
     //King with three enemy pawns behind him
     board = Board("8/8/8/8/2K5/1ppp4/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 8);
     delete newBoards;
@@ -638,7 +636,7 @@ void testKingMoves() {
 
     //Black King trapped by rooks in stalemate
     board = Board("3R1R2/8/8/7R/4k3/7R/8/8 b - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 0);
     delete newBoards;
@@ -646,7 +644,7 @@ void testKingMoves() {
 
     //White king castle long and short
     board = Board("8/8/8/8/8/8/8/R3K2R w KQ - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 26);
     delete newBoards;
@@ -654,7 +652,7 @@ void testKingMoves() {
 
     //Black king castle long and short
     board = Board("r3k2r/8/8/8/8/8/8/8 b kq - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 26);
     delete newBoards;
@@ -662,7 +660,7 @@ void testKingMoves() {
 
     //White king castle blocked by rooks attacking squares next to him
     board = Board("3r1r2/8/8/8/8/8/8/R3K2R w KQ - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 20);
     delete newBoards;
@@ -670,7 +668,7 @@ void testKingMoves() {
 
     //Black king castle blocked by rooks attacking squares next to him
     board = Board("r3k2r/8/8/8/8/8/8/3R1R2 b kq - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfBoards = newBoards->size();
     assert(numberOfBoards == 20);
     delete newBoards;
@@ -687,7 +685,7 @@ void testChecks() {
 
     //3 rooks with 2 checks each
     board = Board("7k/8/8/8/8/R7/1R6/2R5 w - d3 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfChecks = 0;
     for (int i = 0; i < newBoards->size(); i++) {
         if (newBoards->at(i).state.check == 1) numberOfChecks++;
@@ -698,7 +696,7 @@ void testChecks() {
 
     //all the pieces have a few checks each
     board = Board("6N1/8/8/3k4/8/4P3/2P4R/1Q3B2 w - d3 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfChecks = 0;
     for (int i = 0; i < newBoards->size(); i++) {
         if (newBoards->at(i).state.check == 1) numberOfChecks++;
@@ -709,7 +707,7 @@ void testChecks() {
 
     //discovered checks
     board = Board("8/8/3k1P1R/8/5N2/3N4/7B/3R4 w - d3 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfChecks = 0;
     for (int i = 0; i < newBoards->size(); i++) {
         if (newBoards->at(i).state.check == 1) numberOfChecks++;
@@ -720,7 +718,7 @@ void testChecks() {
 
     //knight promotions
     board = Board("8/1P1k1P2/8/8/8/8/8/8 w - d3 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfChecks = 0;
     for (int i = 0; i < newBoards->size(); i++) {
         if (newBoards->at(i).state.check == 1) numberOfChecks++;
@@ -731,7 +729,7 @@ void testChecks() {
 
     //rook and queen promotions
     board = Board("3k4/1P3P2/8/8/8/8/8/8 w - d3 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfChecks = 0;
     for (int i = 0; i < newBoards->size(); i++) {
         if (newBoards->at(i).state.check == 1) numberOfChecks++;
@@ -742,7 +740,7 @@ void testChecks() {
 
     //long castle check
     board = Board("3k4/8/8/8/8/8/8/R3K3 w Q - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfChecks = 0;
     for (int i = 0; i < newBoards->size(); i++) {
         if (newBoards->at(i).state.check == 1) numberOfChecks++;
@@ -762,7 +760,7 @@ void testCheckmates() {
 
     //5 rooks each with mate in 1
     board = Board("8/5K1k/8/R7/R7/R7/R7/R7 w - d3 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfCheckmates = 0;
     for (int i = 0; i < newBoards->size(); i++) {
         if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;
@@ -773,7 +771,7 @@ void testCheckmates() {
 
     //queen with 3 checks that are not checkmate
     board = Board("8/8/8/2ppp2Q/2pk4/2ppp3/8/8 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfCheckmates = 0;
     for (int i = 0; i < newBoards->size(); i++) {
         if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;
@@ -784,7 +782,7 @@ void testCheckmates() {
 
     //3 smothered mates in the corner
     board = Board("8/8/8/8/6n1/3n4/6PP/3n2RK b - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfCheckmates = 0;
     for (int i = 0; i < newBoards->size(); i++) {
         if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;
@@ -795,7 +793,7 @@ void testCheckmates() {
 
     //that one opening with a smothered mate in the middle of the board
     board = Board("r1b1kbnr/pppp1Npp/8/8/3nq3/8/PPPPBP1P/RNBQKR2 b Qkq - 1 7");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfCheckmates = 0;
     for (int i = 0; i < newBoards->size(); i++) {
         if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;
@@ -807,7 +805,7 @@ void testCheckmates() {
     //1B1Q1Q2/2R5/pQ4QN/RB2k3/1Q5Q/N4Q2/K2Q4/6Q1
     //puzzle with a bunch of mate in 1s
     board = Board("1B1Q1Q2/2R5/pQ4QN/RB2k3/1Q5Q/N4Q2/K2Q4/6Q1 w - - 0 1");
-    newBoards = moveGen.getAllLegalBoards(board);
+    newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfCheckmates = 0;
     for (int i = 0; i < newBoards->size(); i++) {
         if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;

@@ -4,8 +4,6 @@
 #include "moveGen.hpp"
 #include "attackTables.hpp"
 
-static MoveGenerator moveGen = MoveGenerator();
-
 //evaluates the material of the position returning a negative score for black
 //and returns a 0 for the position being equal in material
 int material(Board board) {
@@ -47,10 +45,10 @@ int pieceActivity(Board board) {
     int squares = 0;
 
     for (int i = startPiece; i <= endPiece; i++) {
-        if ((i % 6) == 1) squares += moveGen.getBishopMoves(board).size();
-        if ((i % 6) == 2) squares += moveGen.getKnightMoves(board).size();
-        if ((i % 6) == 3) squares += moveGen.getRookMoves(board).size();
-        if ((i % 6) == 4) squares += moveGen.getQueenMoves(board).size();
+        if ((i % 6) == 1) squares += MoveGenerator::getBishopMoves(board).size();
+        if ((i % 6) == 2) squares += MoveGenerator::getKnightMoves(board).size();
+        if ((i % 6) == 3) squares += MoveGenerator::getRookMoves(board).size();
+        if ((i % 6) == 4) squares += MoveGenerator::getQueenMoves(board).size();
     }
 
     return squares;

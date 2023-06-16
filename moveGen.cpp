@@ -6,7 +6,7 @@
 #include "moveGen.hpp"
 
 //everything outside this is set seperately for special moves
-MoveCode MoveGenerator::createMove(int startSquare, int endSquare, int piece, int capture) {
+MoveCode createMove(int startSquare, int endSquare, int piece, int capture) {
     MoveCode move;
     move.startSquare = startSquare;
     move.endSquare = endSquare;
@@ -65,19 +65,113 @@ bool MoveGenerator::isSquareAttacked(int square, int side, Board board, map occu
     return false;
 };
 
-bool MoveGenerator::isBoardValid(Board board) {
+bool isBoardValid(Board board) {
     map king = board.bitMaps[board.state.whiteToMove ? 11 : 5];
     if (king == 0ULL) return true; //if there is no king it is a valid board for tests
     int kingSquare = getLSBIndex(king);
-    return !(isSquareAttacked(kingSquare, board.state.whiteToMove, board, board.All));
+    return !(MoveGenerator::isSquareAttacked(kingSquare, board.state.whiteToMove, board, board.All));
 };
 
-bool MoveGenerator::isBoardCheck(Board board) {
+bool isBoardCheck(Board board) {
         map king = board.bitMaps[board.state.whiteToMove ? 5 : 11];
         if (king == 0ULL) return false; //if there is no king it is not check for tests
         int kingSquare = getLSBIndex(king);
-        return isSquareAttacked(kingSquare, !board.state.whiteToMove, board, board.All);
+        return MoveGenerator::isSquareAttacked(kingSquare, !board.state.whiteToMove, board, board.All);
     };
+
+bool isBoardCheckMate(Board board) {
+    map kingMap;
+    map attackMask;
+    map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
+    MoveCode move;
+    std::vector<MoveCode> moveList;
+
+    kingMap = board.bitMaps[board.state.whiteToMove ? 5 : 11]; //get the kings starting square
+    map occupancy = board.All ^ kingMap; //remove the king from the occupancy
+    int kingSquare = getLSBIndex(kingMap);
+
+    //get all moves for the King
+    attackMask = AttackTables::getKingAttacks(kingSquare);
+    int attackMaskBitCount = getBitCount(attackMask);
+
+    //loop through each square and check if there are any open escape squares
+    for (int j = 0; j < attackMaskBitCount; j++) {
+        int endSquare = getLSBIndex(attackMask);
+        attackMask = popLSB(attackMask);
+
+        if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
+        //if the square isn't attacked then the king can escape there doesn't matter if there is an enemy there or not
+        if (!MoveGenerator::isSquareAttacked(endSquare, !board.state.whiteToMove, board, occupancy)) return false;
+    }
+
+    //find the checker and see if we can block them if we find 2 checkers then we know its checkmate 
+    //because we have to move the king in double check and we know that there are no escape squares
+
+    //loop through all other enemy pieces other than the king
+    int startPiece = board.state.whiteToMove ? BPawn : WPawn;
+    int endPiece = board.state.whiteToMove ? BQueen: WQueen;
+
+    int checkingPieceSquare = 0;
+    int checkingPiece = 0;
+
+    for (int i = startPiece; i <= endPiece; i++) {
+        map currentMap = board.bitMaps[i];
+        int numberOfAttackers = getBitCount(currentMap);
+
+        for (int j = 0; j < numberOfAttackers; j++){
+            int enemyStartSquare = getLSBIndex(currentMap);
+            currentMap = popLSB(currentMap);
+            attackMask = 0ULL;
+            if ((i % 6) == 0) attackMask = AttackTables::getPawnAttacks(enemyStartSquare, !board.state.whiteToMove);
+            if ((i % 6) == 1) attackMask = AttackTables::getBishopAttacks(enemyStartSquare, board.All);
+            if ((i % 6) == 2) attackMask = AttackTables::getKnightAttacks(enemyStartSquare);
+            if ((i % 6) == 3) attackMask = AttackTables::getRookAttacks(enemyStartSquare, board.All);
+            if ((i % 6) == 4) attackMask = AttackTables::getQueenAttacks(enemyStartSquare, board.All);
+
+            attackMask |= (1ULL << enemyStartSquare);
+
+            if (attackMask & kingMap) {
+                if (checkingPiece || checkingPieceSquare) return true;
+                checkingPiece = i;
+                checkingPieceSquare = enemyStartSquare;
+            }
+        }
+    }
+
+    //Now we see if there are any moves to block this attack
+    attackMask = 0ULL;
+    //pawn can't be blocked so the square its on is added and we will check if we can capture that pawn
+    if ((checkingPiece % 6) == 1) attackMask = AttackTables::getBishopAttacks(checkingPieceSquare, board.All);
+    //knight can't be blocked so the square its on is added and we will check if we can capture that pawn
+    if ((checkingPiece % 6) == 3) attackMask = AttackTables::getRookAttacks(checkingPieceSquare, board.All);
+    if ((checkingPiece % 6) == 4) attackMask = AttackTables::getQueenAttacks(checkingPieceSquare, board.All);
+
+
+
+    attackMask |= ((1ULL << checkingPieceSquare) | (1ULL << kingSquare)); //add the square the attacking piece is on so we can check if we can capture it
+    attackMask ^= (1ULL << kingSquare); //remove the king from the mask
+
+
+    startPiece = board.state.whiteToMove ? WPawn : BPawn;
+    endPiece = board.state.whiteToMove ? WQueen: BQueen;
+
+    for (int i = startPiece; i <= endPiece; i++) {
+        if ((i % 6) == 0) moveList = MoveGenerator::getPawnMoves(board);
+        if ((i % 6) == 1) moveList = MoveGenerator::getBishopMoves(board);
+        if ((i % 6) == 2) moveList = MoveGenerator::getKnightMoves(board);
+        if ((i % 6) == 3) moveList = MoveGenerator::getRookMoves(board);
+        if ((i % 6) == 4) moveList = MoveGenerator::getQueenMoves(board);
+        
+        int moveCount = moveList.size();
+        for (int i = 0; i < moveCount; i++) {
+            if (attackMask & (1ULL << moveList[i].endSquare)) {
+                Board newBoard = board.move(moveList[i]);
+                if (isBoardValid(newBoard)) return false;
+            }
+        }
+    }
+    return true;
+};
 
 std::vector<MoveCode> MoveGenerator::getPawnMoves(Board board) {
     map pawns;
@@ -445,8 +539,6 @@ std::vector<MoveCode> MoveGenerator::getKingMoves(Board board) {
     return moveList;
 };
 
-MoveGenerator::MoveGenerator() {};
-
 std::vector<MoveCode> MoveGenerator::calculateAllMoves(Board board) {
     std::vector<MoveCode> moveList;
     std::vector<MoveCode> newMoves;
@@ -475,100 +567,6 @@ std::vector<Board>* MoveGenerator::validateAllMoves(Board board, std::vector<Mov
     }
     return validBoards;
 }
-
-bool MoveGenerator::isBoardCheckMate(Board board) {
-    map kingMap;
-    map attackMask;
-    map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
-    MoveCode move;
-    std::vector<MoveCode> moveList;
-
-    kingMap = board.bitMaps[board.state.whiteToMove ? 5 : 11]; //get the kings starting square
-    map occupancy = board.All ^ kingMap; //remove the king from the occupancy
-    int kingSquare = getLSBIndex(kingMap);
-
-    //get all moves for the King
-    attackMask = AttackTables::getKingAttacks(kingSquare);
-    int attackMaskBitCount = getBitCount(attackMask);
-
-    //loop through each square and check if there are any open escape squares
-    for (int j = 0; j < attackMaskBitCount; j++) {
-        int endSquare = getLSBIndex(attackMask);
-        attackMask = popLSB(attackMask);
-
-        if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
-        //if the square isn't attacked then the king can escape there doesn't matter if there is an enemy there or not
-        if (!isSquareAttacked(endSquare, !board.state.whiteToMove, board, occupancy)) return false;
-    }
-
-    //find the checker and see if we can block them if we find 2 checkers then we know its checkmate 
-    //because we have to move the king in double check and we know that there are no escape squares
-
-    //loop through all other enemy pieces other than the king
-    int startPiece = board.state.whiteToMove ? BPawn : WPawn;
-    int endPiece = board.state.whiteToMove ? BQueen: WQueen;
-
-    int checkingPieceSquare = 0;
-    int checkingPiece = 0;
-
-    for (int i = startPiece; i <= endPiece; i++) {
-        map currentMap = board.bitMaps[i];
-        int numberOfAttackers = getBitCount(currentMap);
-
-        for (int j = 0; j < numberOfAttackers; j++){
-            int enemyStartSquare = getLSBIndex(currentMap);
-            currentMap = popLSB(currentMap);
-            attackMask = 0ULL;
-            if ((i % 6) == 0) attackMask = AttackTables::getPawnAttacks(enemyStartSquare, !board.state.whiteToMove);
-            if ((i % 6) == 1) attackMask = AttackTables::getBishopAttacks(enemyStartSquare, board.All);
-            if ((i % 6) == 2) attackMask = AttackTables::getKnightAttacks(enemyStartSquare);
-            if ((i % 6) == 3) attackMask = AttackTables::getRookAttacks(enemyStartSquare, board.All);
-            if ((i % 6) == 4) attackMask = AttackTables::getQueenAttacks(enemyStartSquare, board.All);
-
-            attackMask |= (1ULL << enemyStartSquare);
-
-            if (attackMask & kingMap) {
-                if (checkingPiece || checkingPieceSquare) return true;
-                checkingPiece = i;
-                checkingPieceSquare = enemyStartSquare;
-            }
-        }
-    }
-
-    //Now we see if there are any moves to block this attack
-    attackMask = 0ULL;
-    //pawn can't be blocked so the square its on is added and we will check if we can capture that pawn
-    if ((checkingPiece % 6) == 1) attackMask = AttackTables::getBishopAttacks(checkingPieceSquare, board.All);
-    //knight can't be blocked so the square its on is added and we will check if we can capture that pawn
-    if ((checkingPiece % 6) == 3) attackMask = AttackTables::getRookAttacks(checkingPieceSquare, board.All);
-    if ((checkingPiece % 6) == 4) attackMask = AttackTables::getQueenAttacks(checkingPieceSquare, board.All);
-
-
-
-    attackMask |= ((1ULL << checkingPieceSquare) | (1ULL << kingSquare)); //add the square the attacking piece is on so we can check if we can capture it
-    attackMask ^= (1ULL << kingSquare); //remove the king from the mask
-
-
-    startPiece = board.state.whiteToMove ? WPawn : BPawn;
-    endPiece = board.state.whiteToMove ? WQueen: BQueen;
-
-    for (int i = startPiece; i <= endPiece; i++) {
-        if ((i % 6) == 0) moveList = getPawnMoves(board);
-        if ((i % 6) == 1) moveList = getBishopMoves(board);
-        if ((i % 6) == 2) moveList = getKnightMoves(board);
-        if ((i % 6) == 3) moveList = getRookMoves(board);
-        if ((i % 6) == 4) moveList = getQueenMoves(board);
-        
-        int moveCount = moveList.size();
-        for (int i = 0; i < moveCount; i++) {
-            if (attackMask & (1ULL << moveList[i].endSquare)) {
-                Board newBoard = board.move(moveList[i]);
-                if (isBoardValid(newBoard)) return false;
-            }
-        }
-    }
-    return true;
-};
 
 std::vector<Board>* MoveGenerator::getAllLegalBoards(Board board) {
     std::vector<MoveCode> moveList = calculateAllMoves(board);
