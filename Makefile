@@ -1,11 +1,20 @@
 CPPFLAGS = -Wfatal-errors --std=c++17 -pedantic
 
-all: tests
+all: tests main
 
 tests: moveGenTest
 
+main: main.o moveGen.o attackTables.o chessBoard.o bitFunctions.o evaluation.o
+	g++ $(CPPFLAGS) main.o bitFunctions.o moveGen.o attackTables.o chessBoard.o evaluation.o -o main
+
 moveGenTest: moveGenTest.o moveGen.o attackTables.o chessBoard.o bitFunctions.o
 	g++ $(CPPFLAGS) moveGenTest.o bitFunctions.o moveGen.o attackTables.o chessBoard.o -o moveGenTest
+
+main.o: main.cpp
+	g++ $(CPPFLAGS) -c main.cpp -o main.o
+
+evaluation.o: evaluation.cpp evaluation.hpp
+	g++ $(CPPFLAGS) -c evaluation.cpp -o evaluation.o
 
 chessBoard.o: chessBoard.cpp chessBoard.hpp
 	g++ $(CPPFLAGS) -c chessBoard.cpp -o chessBoard.o
@@ -23,4 +32,4 @@ bitFunctions.o: bitFunctions.cpp bitFunctions.hpp
 	g++ $(CPPFLAGS) -c bitFunctions.cpp -o bitFunctions.o
 
 clean:
-	del *.o moveGenTest.exe
+	del *.o moveGenTest.exe main.exe
