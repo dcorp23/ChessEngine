@@ -24,44 +24,58 @@ MoveCode createMove(int startSquare, int endSquare, int piece, int capture) {
 
 //check if a square is attacked by the side given
 bool MoveGenerator::isSquareAttacked(int square, int side, Board board, map occupancy) {
-    map attackedMask = 0ULL;
-    map current;
-    map isAttacked = 1ULL << square;
+    //set queen attack from the square and have blockers be everything but enemy bishops rooks and queens
+    //and the attack mask with a map of bishop rooks and queens and if it intersects then it is attacked
+    //then set a knight attack from the square and if it intersects with enemy knights then its attacked
+    //then use a pawn attack mask backwards to the enemy and if there is a pawn there then it is attacked
+    //then use a king attack mask and check if there is a king in the square
+    //this way we don't have to use a loop and all and it might be faster when checking if a king is in check or not
 
-    int startPiece = side ? WPawn : BPawn;
-    int endPiece = side ? WKing : BKing;
+    //use rays from a bishop attack origin of the square in question
+    map attackingBishopsQueens;
 
-    for (int i = startPiece; i <= endPiece; i++) {
-        current = board.bitMaps[i];
-        int bitCount = getBitCount(board.bitMaps[i]);
-        for (int j = 0; j < bitCount; j++) {
-            switch (i % 6)
-            {
-            case 0:
-                attackedMask = AttackTables::getPawnAttacks(getLSBIndex(current), side);
-                break;
-            case 1:
-                attackedMask = AttackTables::getBishopAttacks(getLSBIndex(current), occupancy);
-                break;
-            case 2:
-                attackedMask = AttackTables::getKnightAttacks(getLSBIndex(current));
-                break;
-            case 3:
-                attackedMask = AttackTables::getRookAttacks(getLSBIndex(current), occupancy);
-                break;
-            case 4:
-                attackedMask = AttackTables::getQueenAttacks(getLSBIndex(current), occupancy);
-                break;
-            case 5:
-                attackedMask = AttackTables::getKingAttacks(getLSBIndex(current));
-                break;
-            default:
-                break;
-            }
-            current = popLSB(current);
-            if (attackedMask & isAttacked) return true;
-        }
-    }
+    map bishopAttackMask = AttackTables::getBishopAttacks(square, occupancy);
+    if (side) attackingBishopsQueens = board.bitMaps[WBishop] | board.bitMaps[WQueen];
+    else attackingBishopsQueens = board.bitMaps[BBishop] | board.bitMaps[BQueen];
+    
+    if (bishopAttackMask & attackingBishopsQueens) return true;
+
+    //use rays from a rook origin of the square in question
+    map attackingRooksQueens;
+
+    map rookAttackMask = AttackTables::getRookAttacks(square, occupancy);
+    if (side) attackingRooksQueens = board.bitMaps[WRook] | board.bitMaps[WQueen];
+    else attackingRooksQueens = board.bitMaps[BRook] | board.bitMaps[BQueen];
+
+    if (rookAttackMask & attackingRooksQueens) return true;
+
+    //use knight attack from the square in question
+    map attackingKnights;
+
+    map knightAttackMask = AttackTables::getKnightAttacks(square);
+    if (side) attackingKnights = board.bitMaps[WKnight];
+    else attackingKnights = board.bitMaps[BKnight];
+
+    if (attackingKnights & knightAttackMask) return true;
+
+    //use pawn attack mask from the opposite side
+    map attackingPawns;
+
+    map pawnAttackMask = AttackTables::getPawnAttacks(square, !side);
+    if (side) attackingPawns = board.bitMaps[WPawn];
+    else attackingPawns = board.bitMaps[BPawn];
+
+    if (attackingPawns & pawnAttackMask) return true;
+
+    //use a king attack mask to see if the king is near by
+    map attackingKing;
+
+    map kingAttackMask = AttackTables::getKingAttacks(square);
+    if (side) attackingKing = board.bitMaps[WKing];
+    else attackingKing = board.bitMaps[BKing];
+
+    if (attackingKing & kingAttackMask) return true;
+
     return false;
 };
 

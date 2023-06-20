@@ -38,7 +38,7 @@ float minimax(Board board, int depth, bool isMaximizingPlayer, float alpha, floa
 
 int main(void) {
     AttackTables::initAttackTables();
-    Board board = Board("r2qkb1r/pp3ppp/2n1pn2/3p3b/3P1B2/2PB1N1P/PP3PP1/RN1QK2R w KQkq - 0 9");
+    Board board = Board(startingFEN);
     std::cout << (board.state.whiteToMove ? "White to move\n" : "Black to move\n");
     board.printBoard();
     

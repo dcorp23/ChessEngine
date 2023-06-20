@@ -13,7 +13,7 @@ namespace Evaluation {
     float pieceActivity(Board board);
 
     //counts then number of pawns in the center for that side
-    float centerControl(Board board);
+    float pawnEval(Board board);
 
     //returns full evaluation of a board for the person moving
     float evaluate(Board board);
