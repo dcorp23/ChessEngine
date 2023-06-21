@@ -37,20 +37,25 @@ float Evaluation::material(Board board) {
 //evaluates the safety of the king
 float Evaluation::kingSafety(Board board) {
     const int squareEval[64] = {
-        200, 200, 50, 50, 50, 100, 200, 150, 
+        300, 300, 50, 50, 50, 100, 300, 250, 
         0, 0, -50, -100, -100, -50, 0, 0, 
         -50, -50, -150, -150, -150, -150, -50, -50,
         -50, -100, -200, -300, -300, -200, -100, -50,
         -50, -100, -200, -300, -300, -200, -100, -50,
         -50, -50, -150, -150, -150, -150, -50, -50, 
         0, 0, -50, -100, -100, -50, 0, 0,
-        200, 200, 50, 50, 50, 100, 200, 150
+        300, 300, 50, 50, 50, 100, 300, 250
     };
 
     int whiteKingSquare = getLSBIndex(board.bitMaps[WKing]);
     int blackKingSquare = getLSBIndex(board.bitMaps[BKing]);
     int whiteScore = squareEval[whiteKingSquare];
     int blackScore = squareEval[blackKingSquare];
+
+    whiteScore += (board.state.whiteShortCastle ? 0 : -50);
+    whiteScore += (board.state.whiteLongCastle ? 0 : -30);
+    blackScore += (board.state.blackShortCastle ? 0 : -50);
+    blackScore += (board.state.blackLongCastle ? 0 : -30);
 
     return whiteScore - blackScore;
 }
@@ -181,6 +186,7 @@ float rookEval(Board board) {
         if (!(FILES[col] & allPawns)) whiteScore += 75; //open file
         if (row == 7) whiteScore += 75; //7th rank
         if (col == 4 || col == 5) whiteScore += 25; //center the rooks
+        if (col == 3 || col == 6) whiteScore += 25; //center the rooks
     }
 
     map blackRooks = board.bitMaps[BRook];
@@ -193,7 +199,8 @@ float rookEval(Board board) {
         int row = square / 8;
         if (!(FILES[col] & allPawns)) blackScore += 75; //open file
         if (row == 2) blackScore += 75; //2nd rank
-        if (col == 4 || col == 5) blackScore += 25; //center the rooks
+        if (col == 4 || col == 5) blackScore += 35; //center the rooks
+        if (col == 3 || col == 6) blackScore += 25; //center the rooks
     }
 
     return whiteScore - blackScore;
@@ -223,8 +230,8 @@ float Evaluation::pieceActivity(Board board) {
         if (i == BQueen) blackSquares += MoveGenerator::getQueenMoves(tempBoard).size();
     }
 
-    whiteSquares = (whiteSquares * 20) * (board.state.whiteToMove ? 1.2 : .8); 
-    blackSquares = (blackSquares * 20) * (board.state.whiteToMove ? .8 : 1.2); 
+    whiteSquares = (whiteSquares * 20); //* (board.state.whiteToMove ? 1.2 : .8); 
+    blackSquares = (blackSquares * 20); //* (board.state.whiteToMove ? .8 : 1.2); 
 
     return whiteSquares - blackSquares;
 }

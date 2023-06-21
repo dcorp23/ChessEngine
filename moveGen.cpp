@@ -6,7 +6,7 @@
 #include "moveGen.hpp"
 
 //everything outside this is set seperately for special moves
-MoveCode createMove(int startSquare, int endSquare, int piece, int capture) {
+MoveCode MoveGenerator::createMove(int startSquare, int endSquare, int piece, int capture) {
     MoveCode move;
     move.startSquare = startSquare;
     move.endSquare = endSquare;
@@ -208,29 +208,31 @@ std::vector<MoveCode> MoveGenerator::getPawnMoves(Board board) {
             
             //check for captures
             attackMask = AttackTables::getPawnAttacks(startSquare, 1);
-            attackMaskBitCount = getBitCount(attackMask);
-            for (int i = 0; i < attackMaskBitCount; i++) {
-                int attackSquare = getLSBIndex(attackMask);
-                attackMask = popLSB(attackMask);
+            if (attackMask & board.Black || board.state.enPassant) {
+                attackMaskBitCount = getBitCount(attackMask);
+                for (int i = 0; i < attackMaskBitCount; i++) {
+                    int attackSquare = getLSBIndex(attackMask);
+                    attackMask = popLSB(attackMask);
 
-                //check for normal captures
-                if ((1ULL << attackSquare) & board.Black) {
-                    move = createMove(startSquare, attackSquare, 0, 1);
-                    if(attackSquare <= h8) { //promotions
-                        for (int i = 1; i < 5; i++) {
-                            move.promotion = i;
+                    //check for normal captures
+                    if ((1ULL << attackSquare) & board.Black) {
+                        move = createMove(startSquare, attackSquare, 0, 1);
+                        if(attackSquare <= h8) { //promotions
+                            for (int i = 1; i < 5; i++) {
+                                move.promotion = i;
+                                moveList.push_back(move);
+                            }
+                        } else { //not a promotion
                             moveList.push_back(move);
                         }
-                    } else { //not a promotion
-                        moveList.push_back(move);
                     }
-                }
-                //check for enpassant
-                if (board.state.enPassant != 0) {
-                    if (attackSquare == board.state.enPassant) {
-                        move = createMove(startSquare, attackSquare, 0, 1);
-                        move.enPassantFlag = 1;
-                        moveList.push_back(move);
+                    //check for enpassant
+                    if (board.state.enPassant != 0) {
+                        if (attackSquare == board.state.enPassant) {
+                            move = createMove(startSquare, attackSquare, 0, 1);
+                            move.enPassantFlag = 1;
+                            moveList.push_back(move);
+                        }
                     }
                 }
             }
@@ -268,30 +270,32 @@ std::vector<MoveCode> MoveGenerator::getPawnMoves(Board board) {
 
             //check for captures
             attackMask = AttackTables::getPawnAttacks(startSquare, 0);
-            attackMaskBitCount = getBitCount(attackMask);
-            for (int i = 0; i < attackMaskBitCount; i++) {
-                int attackSquare = getLSBIndex(attackMask);
-                attackMask = popLSB(attackMask);
+            if (attackMask & board.White || board.state.enPassant) {
+                attackMaskBitCount = getBitCount(attackMask);
+                for (int i = 0; i < attackMaskBitCount; i++) {
+                    int attackSquare = getLSBIndex(attackMask);
+                    attackMask = popLSB(attackMask);
 
-                //check for normal captures
-                if ((1ULL << attackSquare) & board.White) {
-                    move = createMove(startSquare, attackSquare, 0, 1);
-                    if(attackSquare >= a1) { //promotions
-                        for (int i = 1; i < 5; i++) {
-                            move.promotion = i;
+                    //check for normal captures
+                    if ((1ULL << attackSquare) & board.White) {
+                        move = createMove(startSquare, attackSquare, 0, 1);
+                        if(attackSquare >= a1) { //promotions
+                            for (int i = 1; i < 5; i++) {
+                                move.promotion = i;
+                                moveList.push_back(move);
+                            }
+                        } else { //not a promotion
                             moveList.push_back(move);
                         }
-                    } else { //not a promotion
-                        moveList.push_back(move);
                     }
-                }
 
-                //check for enpassant
-                if (board.state.enPassant != 0) {
-                    if (attackSquare == board.state.enPassant) {
-                        move = createMove(startSquare, attackSquare, 0, 1);
-                        move.enPassantFlag = 1;
-                        moveList.push_back(move);
+                    //check for enpassant
+                    if (board.state.enPassant != 0) {
+                        if (attackSquare == board.state.enPassant) {
+                            move = createMove(startSquare, attackSquare, 0, 1);
+                            move.enPassantFlag = 1;
+                            moveList.push_back(move);
+                        }
                     }
                 }
             }
@@ -333,13 +337,17 @@ std::vector<MoveCode> MoveGenerator::getBishopMoves(Board board) {
     MoveCode move;
 
     beforeMove = board.bitMaps[board.state.whiteToMove ? WBishop: BBishop];
+    int numberOfBishops = getBitCount(board.bitMaps[board.state.whiteToMove ? WBishop : BBishop]);
     //loop through each Bishop
-    for (int i = 0; i < getBitCount(board.bitMaps[board.state.whiteToMove ? WBishop : BBishop]); i++) {
+    for (int i = 0; i < numberOfBishops; i++) {
         int startSquare = getLSBIndex(beforeMove);
         beforeMove = popLSB(beforeMove);
 
         //get all moves for the Bishop
         attackMask = AttackTables::getBishopAttacks(startSquare, board.All);
+        map removeMask = attackMask & teamPieces;
+        attackMask ^= removeMask;
+
         int attackMaskBitCount = getBitCount(attackMask);
 
         //loop through each square
@@ -347,7 +355,7 @@ std::vector<MoveCode> MoveGenerator::getBishopMoves(Board board) {
             int endSquare = getLSBIndex(attackMask);
             attackMask = popLSB(attackMask);
 
-            if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
+            //if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
             if (enemyPieces & (1ULL << endSquare)) { //check for captures
                 move = createMove(startSquare, endSquare, 1, 1);
                 moveList.push_back(move);
@@ -370,13 +378,17 @@ std::vector<MoveCode> MoveGenerator::getKnightMoves(Board board) {
     std::vector<MoveCode> moveList;
 
     beforeMove = board.bitMaps[board.state.whiteToMove ? WKnight : BKnight];
+    int numberOfKnights = getBitCount(board.bitMaps[board.state.whiteToMove ? WKnight : BKnight]);
     //loop through each knight
-    for (int i = 0; i < getBitCount(board.bitMaps[board.state.whiteToMove ? WKnight : BKnight]); i++) {
+    for (int i = 0; i < numberOfKnights; i++) {
         int startSquare = getLSBIndex(beforeMove);
         beforeMove = popLSB(beforeMove);
 
         //get all moves for the knight 
         attackMask = AttackTables::getKnightAttacks(startSquare);
+        map removeMask = attackMask & teamPieces;
+        attackMask ^= removeMask;
+
         int attackMaskBitCount = getBitCount(attackMask);
 
         //loop through each square
@@ -384,7 +396,7 @@ std::vector<MoveCode> MoveGenerator::getKnightMoves(Board board) {
             int endSquare = getLSBIndex(attackMask);
             attackMask = popLSB(attackMask);
 
-            if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
+            //if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
             if (enemyPieces & (1ULL << endSquare)) { //check for captures
                 move = createMove(startSquare, endSquare, 2, 1);
                 moveList.push_back(move);
@@ -407,13 +419,17 @@ std::vector<MoveCode> MoveGenerator::getRookMoves(Board board) {
     std::vector<MoveCode> moveList;
 
     beforeMove = board.bitMaps[board.state.whiteToMove ? WRook: BRook];
+    int numberOfRooks = getBitCount(board.bitMaps[board.state.whiteToMove ? WRook : BRook]);
     //loop through each Rook
-    for (int i = 0; i < getBitCount(board.bitMaps[board.state.whiteToMove ? WRook : BRook]); i++) {
+    for (int i = 0; i < numberOfRooks; i++) {
         int startSquare = getLSBIndex(beforeMove);
         beforeMove = popLSB(beforeMove);
 
         //get all moves for the Rook
         attackMask = AttackTables::getRookAttacks(startSquare, board.All);
+        map removeMask = attackMask & teamPieces;
+        attackMask ^= removeMask;
+
         int attackMaskBitCount = getBitCount(attackMask);
 
         //loop through each square
@@ -421,7 +437,7 @@ std::vector<MoveCode> MoveGenerator::getRookMoves(Board board) {
             int endSquare = getLSBIndex(attackMask);
             attackMask = popLSB(attackMask);
 
-            if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
+            //if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
             if (enemyPieces & (1ULL << endSquare)) { //check for captures
                 move = createMove(startSquare, endSquare, 3, 1);
                 moveList.push_back(move);
@@ -444,13 +460,17 @@ std::vector<MoveCode> MoveGenerator::getQueenMoves(Board board) {
     std::vector<MoveCode> moveList;
 
     beforeMove = board.bitMaps[board.state.whiteToMove ? WQueen: BQueen];
+    int numberOfQueens = getBitCount(board.bitMaps[board.state.whiteToMove ? WQueen : BQueen]);
     //loop through each Queen
-    for (int i = 0; i < getBitCount(board.bitMaps[board.state.whiteToMove ? WQueen : BQueen]); i++) {
+    for (int i = 0; i < numberOfQueens; i++) {
         int startSquare = getLSBIndex(beforeMove);
         beforeMove = popLSB(beforeMove);
 
         //get all moves for the Queen
         attackMask = AttackTables::getQueenAttacks(startSquare, board.All);
+        map removeMask = attackMask & teamPieces;
+        attackMask ^= removeMask;
+
         int attackMaskBitCount = getBitCount(attackMask);
 
         //loop through each move
@@ -458,7 +478,7 @@ std::vector<MoveCode> MoveGenerator::getQueenMoves(Board board) {
             int endSquare = getLSBIndex(attackMask);
             attackMask = popLSB(attackMask);
 
-            if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
+            //if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
             if (enemyPieces & (1ULL << endSquare)) { //check for captures
                 move = createMove(startSquare, endSquare, 4, 1);
                 moveList.push_back(move);
@@ -487,6 +507,9 @@ std::vector<MoveCode> MoveGenerator::getKingMoves(Board board) {
 
     //get all moves for the King
     attackMask = AttackTables::getKingAttacks(startSquare);
+    map removeMask = attackMask & teamPieces;
+    attackMask ^= removeMask;
+
     int attackMaskBitCount = getBitCount(attackMask);
 
     //loop through each square
@@ -494,7 +517,7 @@ std::vector<MoveCode> MoveGenerator::getKingMoves(Board board) {
         int endSquare = getLSBIndex(attackMask);
         attackMask = popLSB(attackMask);
 
-        if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
+        //if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
         if (enemyPieces & (1ULL << endSquare)) { //check for captures
             move = createMove(startSquare, endSquare, 5, 1);
             moveList.push_back(move);

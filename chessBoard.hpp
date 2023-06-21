@@ -11,6 +11,12 @@ enum {
 //Fen string that creates the starting position
 const std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+//given chess notation get integer of square e2->52
+int chessNotationToInt(std::string chessNotation);
+
+//given square integer get the chess notation 52->e2
+std::string intToChessNotation(int squareNumber);
+
 //Unsigned short holding information on the current board
 struct BoardState {
     unsigned short whiteToMove : 1;

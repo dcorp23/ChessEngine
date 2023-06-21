@@ -18,12 +18,27 @@ BoardState::BoardState() {
 //piece 0-5 pawn bishop knight rook queen king
 void MoveCode::printCode() {
     std::cout << " Piece: " << this->piece;
-    std::cout << " Start: " << this->startSquare;
-    std::cout << " End: " << this->endSquare;
+    std::cout << " Start: " << intToChessNotation(this->startSquare);
+    std::cout << " End: " << intToChessNotation(this->endSquare);
     std::cout << " Capture: " << this->capture;
     std::cout << " Promotion: " << this->promotion;
     std::cout << '\n';
 };
+
+int chessNotationToInt(std::string chessNotation) {
+    int col = chessNotation[0] - 97;
+    int row = chessNotation[1] - 48;
+    return ((8 - row) * 8) + col;
+}
+
+std::string intToChessNotation(int squareNumber) {
+    int col = squareNumber % 8;
+    int row = (8 - (squareNumber / 8));
+    std::string chessNotation;
+    chessNotation.push_back((char)(col + 97));
+    chessNotation.push_back((char)(row + 48));
+    return chessNotation;
+}
 
 //default constructor for blank board
 Board::Board() {
@@ -131,18 +146,15 @@ Board::Board(std::string fenString) {
 
     currentString = fenParts[2];
     stringLength = currentString.length();
+    newState.whiteLongCastle = 0;
+    newState.whiteShortCastle = 0;
+    newState.blackLongCastle = 0;
+    newState.blackShortCastle = 0;
     for (stringIndex = 0; stringIndex < stringLength; stringIndex++) {
-        if (currentString[stringIndex] == '-') {
-            newState.whiteLongCastle = 0;
-            newState.whiteShortCastle = 0;
-            newState.blackLongCastle = 0;
-            newState.blackShortCastle = 0;
-        } else {
-            if (currentString[stringIndex] == 'K') newState.whiteShortCastle = 1;
-            if (currentString[stringIndex] == 'Q') newState.whiteLongCastle = 1;
-            if (currentString[stringIndex] == 'k') newState.blackShortCastle = 1;
-            if (currentString[stringIndex] == 'q') newState.blackLongCastle = 1;
-        }
+        if (currentString[stringIndex] == 'K') newState.whiteShortCastle = 1;
+        if (currentString[stringIndex] == 'Q') newState.whiteLongCastle = 1;
+        if (currentString[stringIndex] == 'k') newState.blackShortCastle = 1;
+        if (currentString[stringIndex] == 'q') newState.blackLongCastle = 1;
     }
 
     currentString = fenParts[3];

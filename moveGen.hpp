@@ -5,6 +5,9 @@
 #include "attackTables.hpp"
 
 namespace MoveGenerator {
+    //returns a movecode with the given inputs and all special moves are initialized to 0
+    MoveCode createMove(int startSquare, int endSquare, int piece, int capture);
+
     //get a vector of movecodes for the pawns in the position
     std::vector<MoveCode> getPawnMoves(Board board);
 

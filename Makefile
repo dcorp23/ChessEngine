@@ -1,4 +1,4 @@
-CPPFLAGS = -Wfatal-errors --std=c++17 -pedantic
+CPPFLAGS = -Wfatal-errors --std=c++17 -pedantic -Ofast
 
 all: tests main
 
