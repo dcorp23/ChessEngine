@@ -181,7 +181,27 @@ Board::Board(std::string fenString) {
     state = newState;
 };
 
-//constructor for making a move thats not a promotion
+//constructor for move that only moves one piece
+Board::Board(int piece, int side, map newPieceMap, Board* board, BoardState newState) {
+    for (int i = WPawn; i <= BKing; i++) {
+        bitMaps[i] = board->bitMaps[i];
+    }
+
+    bitMaps[piece + (side ? 0 : 6)] = newPieceMap;
+    White = 0ULL;
+    Black = 0ULL;
+    for (int i = WPawn; i <= WKing; i++) {
+        White |= bitMaps[i];
+    }
+    for (int i = BPawn; i <= BKing; i++) {
+        Black |= bitMaps[i];
+    }
+    All = White | Black;
+    
+    state = newState;
+}
+
+//constructor for making a move that moves more than one piece not a promotion
 Board::Board(int piece, int side, map newPieceMap, int secondPiece, map secondPieceMap, Board* board, BoardState newState, int capture) {
     for (int i = WPawn; i <= BKing; i++) {
         bitMaps[i] = board->bitMaps[i];
@@ -341,7 +361,7 @@ Board Board::move(MoveCode code) {
     }
     
     //quiet moves
-    return Board(code.piece, state.whiteToMove, pieceMap, 0, 0ULL, this, newState, 0);
+    return Board(code.piece, state.whiteToMove, pieceMap, this, newState);
 };
 
 void Board::printBoard() {

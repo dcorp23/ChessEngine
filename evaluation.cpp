@@ -230,8 +230,8 @@ float Evaluation::pieceActivity(Board board) {
         if (i == BQueen) blackSquares += MoveGenerator::getQueenMoves(tempBoard).size();
     }
 
-    whiteSquares = (whiteSquares * 20); //* (board.state.whiteToMove ? 1.2 : .8); 
-    blackSquares = (blackSquares * 20); //* (board.state.whiteToMove ? .8 : 1.2); 
+    whiteSquares = (whiteSquares * 15) * (board.state.whiteToMove ? 1.2 : 1); 
+    blackSquares = (blackSquares * 15) * (board.state.whiteToMove ? 1 : 1.2); 
 
     return whiteSquares - blackSquares;
 }
@@ -288,7 +288,7 @@ float Evaluation::pawnEval(Board board) {
 
 
 float Evaluation::evaluate(Board board) {
-    if (board.state.checkMate) return board.state.whiteToMove ? 999999 : -999999;
+    if (board.state.checkMate == 1) return board.state.whiteToMove ? 999999 : -999999;
 
     int kingSafetyValue = kingSafety(board);
     int activityValue = pieceActivity(board);

@@ -31,12 +31,12 @@ namespace MoveGenerator {
 
     //goes through list of movecodes and makes moves on the given board
     //and returns a pointer to a vector of boards that have been validated to be legal moves
-    std::vector<Board>* validateAllMoves(Board board, std::vector<MoveCode> moveList);
+    std::vector<Board> validateAllMoves(Board board, std::vector<MoveCode> moveList);
 
     //checks if a square is attacked by a certain side given the occupancy map
     bool isSquareAttacked(int square, int side, Board board, map occupancy);
 
     //returns a pointer to all legal boards and will update the state of the board if
     //it is check or checkmate the returned pointer needs to be freed
-    std::vector<Board>* getAllLegalBoards(Board board);
+    std::vector<Board> getAllLegalBoards(Board board);
 };

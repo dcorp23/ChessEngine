@@ -3,34 +3,33 @@
 #include "chessBoard.hpp"
 #include "attackTables.hpp"
 #include "moveGen.hpp"
+#include <chrono>
 #define INFINITY 99999999
 
 float minimax(Board board, int depth, bool isMaximizingPlayer, float alpha, float beta) {
     if (depth == 0) return Evaluation::evaluate(board);
     
-    std::vector<Board>* boards = MoveGenerator::getAllLegalBoards(board);
-    int boardsSize = boards->size();
+    std::vector<Board> boards = MoveGenerator::getAllLegalBoards(board);
+    int boardsSize = boards.size();
 
     if (isMaximizingPlayer)  {
         float bestVal = -INFINITY;
         for (int i = 0; i < boardsSize; i++)  {
-            float value = minimax(boards->at(i), depth - 1, false, alpha, beta);
+            float value = minimax(boards.at(i), depth - 1, false, alpha, beta);
             bestVal = std::max( bestVal, value);
-            alpha = std::max( alpha, bestVal);
+            alpha = std::max( alpha, value);
             if (beta <= alpha) break;
         }
-        delete boards;
         return bestVal;
     }
     else {
         float bestVal = INFINITY;
         for (int i = 0; i < boardsSize; i++) {
-            float value = minimax(boards->at(i), depth - 1, true, alpha, beta);
+            float value = minimax(boards.at(i), depth - 1, true, alpha, beta);
             bestVal = std::min( bestVal, value);
-            beta = std::min( beta, bestVal);
+            beta = std::min( beta, value);
             if (beta <= alpha) break;
         }
-        delete boards;
         return bestVal;
     }
 }
@@ -41,11 +40,12 @@ int main(void) {
     std::cout << "Pick a side: white = 1, black = 0\n";
     std::cin >> playerSide;
     Board board = Board(startingFEN);
+    std::cout << "checkmate = " << board.state.checkMate << '\n';
 
     while (!board.state.checkMate) {
         std::cout << (board.state.whiteToMove ? "\nWhite to move\n" : "\nBlack to move\n");
         board.printBoard();
-        std::vector<Board>* boards = MoveGenerator::getAllLegalBoards(board);
+        std::vector<Board> boards = MoveGenerator::getAllLegalBoards(board);
         if (board.state.whiteToMove == playerSide) {
             int piece;
             std::cout << "\nWhat piece do you want to move?\n";
@@ -87,9 +87,9 @@ int main(void) {
             std::cin >> moveIndex;
 
             Board newBoard = board.move(filteredMoveList.at(moveIndex));
-            for (int i = 0; i < boards->size(); i++) {
-                if (newBoard.isEqual(boards->at(i))) {
-                    board = boards->at(i);
+            for (int i = 0; i < boards.size(); i++) {
+                if (newBoard.isEqual(boards.at(i))) {
+                    board = boards.at(i);
                     break;
                 }
             }
@@ -99,11 +99,11 @@ int main(void) {
             float extreme = board.state.whiteToMove ? -INFINITY : INFINITY;
             Board nextBoard;
 
-            int boardsSize = boards->size();
+            int boardsSize = boards.size();
             for (int i = 0; i < boardsSize; i++) {
-                eval = minimax(boards->at(i), 3, board.state.whiteToMove ? false : true, -INFINITY, INFINITY);
+                eval = minimax(boards.at(i), 3, board.state.whiteToMove ? false : true, -INFINITY, INFINITY);
                 if (board.state.whiteToMove ? eval > extreme : eval < extreme) {
-                    nextBoard = boards->at(i);
+                    nextBoard = boards.at(i);
                     extreme = eval;
                 }
             }

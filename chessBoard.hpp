@@ -68,6 +68,9 @@ struct Board {
     Board(std::string fenString);
 
     //constructor for making a move thats not a promotion
+    Board(int piece, int side, map newPieceMap, Board* board, BoardState newState);
+
+    //constructor for making a move that moves more than one piece i.e. capture castle
     Board(int piece, int side, map newPieceMap, int secondPiece, map secondPieceMap, Board* board, BoardState newState, int capture);
 
     //Constructor for promotions only

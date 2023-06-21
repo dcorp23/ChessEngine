@@ -9,43 +9,40 @@
 
 //each depth is 1 move for 1 side so depth 6 would total 3 moves white 3 moves black
 //boards is a pointer to a vector with 1 starting baord
-std::vector<Board>* timeBoardsAtDepth(std::vector<Board>* boards, int depth) {
+std::vector<Board> timeBoardsAtDepth(std::vector<Board> boards, int depth) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     if (depth == 0) {
         return boards;
     } else {
         Board currentBoard = Board();
-        std::vector<Board>* newBoards = new std::vector<Board>; //new boards generated from current board
-        std::vector<Board>* allNewBoards = new std::vector<Board>; //all boards generated
-        int numberOfBoards = boards->size();
+        std::vector<Board> newBoards; //new boards generated from current board
+        std::vector<Board> allNewBoards; //all boards generated
+        int numberOfBoards = boards.size();
         for (int boardIndex = 0; boardIndex < numberOfBoards; boardIndex++) {
-            currentBoard = boards->at(boardIndex);
+            currentBoard = boards.at(boardIndex);
             if (currentBoard.state.checkMate != 1) {
                 newBoards = MoveGenerator::getAllLegalBoards(currentBoard);
-                allNewBoards->insert(allNewBoards->end(), newBoards->begin(), newBoards->end());
-                delete newBoards;
+                allNewBoards.insert(allNewBoards.end(), newBoards.begin(), newBoards.end());
             }
         }
 
-        delete boards;
-
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-        std::cout << allNewBoards->size() << " Boards Found\n";
+        std::cout << allNewBoards.size() << " Boards Found\n";
         std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
         return timeBoardsAtDepth(allNewBoards, depth - 1);
     }
 }
 
-bool testForCorrectBoards(std::vector<Board>* actual, std::vector<Board> expected, int expectedSize) {
-    if (actual->size() != expectedSize) {
-        std::cout << "Acutal Size: " << actual->size() << "Expected Size: " << expectedSize << '\n';
+bool testForCorrectBoards(std::vector<Board> actual, std::vector<Board> expected, int expectedSize) {
+    if (actual.size() != expectedSize) {
+        std::cout << "Acutal Size: " << actual.size() << "Expected Size: " << expectedSize << '\n';
     };
     int sampleSize = expected.size();
-    int actualSize = actual->size();
+    int actualSize = actual.size();
     for (int i = 0; i < sampleSize; i++) {
         bool equal = false;
         for (int j = 0; j < actualSize; j++) {
-            if (expected.at(i).isEqual(actual->at(j))) {
+            if (expected.at(i).isEqual(actual.at(j))) {
                 equal = true;
                 break;
             }
@@ -62,7 +59,7 @@ void testPawnMoves() {
     std::cout << "Test Pawn Moves: 16 Checkpoints\n";
     Board board;
     int numberOfBoards;
-    std::vector<Board>* newBoards;
+    std::vector<Board> newBoards;
     std::vector<Board> testBoards;
 
     std::cout << "White Pawns: \n";
@@ -70,7 +67,7 @@ void testPawnMoves() {
     //pawns on starting square
     board = Board("8/8/8/8/8/8/PPPPPPPP/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/8/8/P7/1PPPPPPP/8 b - - 0 1"));
         testBoards.push_back(Board("8/8/8/8/P7/8/1PPPPPPP/8 b - - 0 1"));
@@ -91,13 +88,12 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 16));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #1\n";
 
     //pawns on starting square knights blocking pushing 2 squares
     board = Board("8/8/8/8/nnnnnnnn/8/PPPPPPPP/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/8/nnnnnnnn/P7/1PPPPPPP/8 b - - 0 1"));
         testBoards.push_back(Board("8/8/8/8/nnnnnnnn/1P6/P1PPPPPP/8 b - - 0 1"));
@@ -110,13 +106,12 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 8));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #2\n";
 
     //2 rows of pawns
     board = Board("8/8/8/8/8/PPPPPPPP/PPPPPPPP/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/8/P7/1PPPPPPP/PPPPPPPP/8 b - - 0 1"));
         testBoards.push_back(Board("8/8/8/8/1P6/P1PPPPPP/PPPPPPPP/8 b - - 0 1"));
@@ -129,13 +124,12 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 8));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #3\n";
 
     //pawns on starting squares with knights in front of them
     board = Board("8/8/8/8/8/nnnnnnnn/PPPPPPPP/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/8/8/nPnnnnnn/1PPPPPPP/8 b - - 0 1"));
         testBoards.push_back(Board("8/8/8/8/8/Pnnnnnnn/P1PPPPPP/8 b - - 0 1"));
@@ -154,13 +148,12 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 14));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #4\n";
 
     //8 pawns 1 square from promotion
     board = Board("8/PPPPPPPP/8/8/8/8/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("Q7/1PPPPPPP/8/8/8/8/8/8 b - - 0 1"));
         testBoards.push_back(Board("B7/1PPPPPPP/8/8/8/8/8/8 b - - 0 1"));
@@ -176,13 +169,12 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 32));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #5\n";
 
     //8 pawns 1 square from promotion with a knights in front of them
     board = Board("nnnnnnnn/PPPPPPPP/8/8/8/8/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("nQnnnnnn/1PPPPPPP/8/8/8/8/8/8 b - - 0 1"));
         testBoards.push_back(Board("nBnnnnnn/1PPPPPPP/8/8/8/8/8/8 b - - 0 1"));
@@ -196,13 +188,12 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 56));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #6\n";
 
     //random captures
     board = Board("5nn1/5P2/2nn4/1n1Pn1n1/1P3P2/8/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("5nn1/5P2/2nn4/1n1PnPn1/1P6/8/8/8 b - - 0 1"));
         testBoards.push_back(Board("5nB1/8/2nn4/1n1Pn1n1/1P3P2/8/8/8 b - - 0 1"));
@@ -212,13 +203,12 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 8));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #7\n";
 
     //en passant
     board = Board("8/8/5P2/3PpP2/8/8/8/8 w - e6 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/4PP2/5P2/8/8/8/8 b - - 0 1"));
         testBoards.push_back(Board("8/8/3P1P2/4pP2/8/8/8/8 b - - 0 1"));
@@ -227,7 +217,6 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 4));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #8\n";
 
     std::cout << "\nBlack Pawns: \n";
@@ -235,7 +224,7 @@ void testPawnMoves() {
     //pawns on starting square
     board = Board("8/pppppppp/8/8/8/8/8/8 b - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/1ppppppp/8/p7/8/8/8/8 w - - 0 1"));
         testBoards.push_back(Board("8/ppppppp1/8/7p/8/8/8/8 w - - 0 1"));
@@ -248,13 +237,12 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 16));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #9\n";
 
     //pawns on starting square knights blocking pushing 2 squares
     board = Board("8/pppppppp/8/NNNNNNNN/8/8/8/8 b - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/ppppppp1/7p/NNNNNNNN/8/8/8/8 w - - 0 1"));
         testBoards.push_back(Board("8/1ppppppp/p7/NNNNNNNN/8/8/8/8 w - - 0 1"));
@@ -263,13 +251,12 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 8));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #10\n";
 
     //2 rows of pawns
     board = Board("8/pppppppp/pppppppp/8/8/8/8/8 b - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/pppppppp/1ppppppp/p7/8/8/8/8 w - - 0 1"));
         testBoards.push_back(Board("8/pppppppp/ppppppp1/7p/8/8/8/8 w - - 0 1"));
@@ -279,13 +266,12 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 8));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #11\n";
 
     //pawns on starting squares with knights in front of them
     board = Board("8/pppppppp/NNNNNNNN/8/8/8/8/8 b - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/pp1ppppp/NNNpNNNN/8/8/8/8/8 w - - 0 1"));
         testBoards.push_back(Board("8/p1pppppp/pNNNNNNN/8/8/8/8/8 w - - 0 1"));
@@ -296,13 +282,12 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 14));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #12\n";
 
     //8 pawns 1 square from promotion
     board = Board("8/8/8/8/8/8/pppppppp/8 b - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/8/8/8/ppp1pppp/3b4 w - - 0 1"));
         testBoards.push_back(Board("8/8/8/8/8/8/1ppppppp/q7 w - - 0 1"));
@@ -313,13 +298,12 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 32));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #13\n";
 
     //8 pawns 1 square from promotion with a knights in front of them
     board = Board("8/8/8/8/8/8/pppppppp/NNNNNNNN b - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/8/8/8/1ppppppp/NqNNNNNN w - - 0 1"));
         testBoards.push_back(Board("8/8/8/8/8/8/p1pppppp/bNNNNNNN w - - 0 1"));
@@ -331,13 +315,12 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 14 * 4));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #14\n";
 
     //random captures
     board = Board("8/8/8/2p3p1/1N1Np1N1/4NN2/2p5/1NN5 b - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/6p1/1NpNp1N1/4NN2/2p5/1NN5 w - - 0 1"));
         testBoards.push_back(Board("8/8/8/6p1/1p1Np1N1/4NN2/2p5/1NN5 w - - 0 1"));
@@ -347,13 +330,12 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 8));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #15\n";
 
     //en passant
     board = Board("8/8/8/8/2pPp3/2p5/8/8 b - d3 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     {//push the expected boards to the test boards
         testBoards.push_back(Board("8/8/8/8/2pP4/2p1p3/8/8 w - d3 0 1"));
         testBoards.push_back(Board("8/8/8/8/2pPp3/8/2p5/8 w - d3 0 1"));
@@ -362,7 +344,6 @@ void testPawnMoves() {
     }
     assert(true == testForCorrectBoards(newBoards, testBoards, 4));
     testBoards.clear();
-    delete newBoards;
     std::cout << "Checkpoint #16\n";
 
     std::cout << "Pawn Tests Passed\n\n";
@@ -372,46 +353,41 @@ void testBishopMoves() {
     std::cout << "Test Bishop Moves: 5 Checkpoints\n";
     Board board;
     int numberOfBoards;
-    std::vector<Board>* newBoards;
+    std::vector<Board> newBoards;
 
     //bishops on starting square
     board = Board("8/8/8/8/8/8/8/2B2B2 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 14);
-    delete newBoards;
     std::cout << "Checkpoint #1\n";
 
     //bishops blocked in center
     board = Board("8/8/2PPPP2/2PBBP2/2PBBP2/2PPPP2/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 4);
-    delete newBoards;
     std::cout << "Checkpoint #2\n";
 
     //bishops randomly blocked
     board = Board("6B1/6P1/3P4/1P6/BBBB4/1P2P3/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 27);
-    delete newBoards;
     std::cout << "Checkpoint #3\n";
 
     //bishops captures
     board = Board("8/8/2pppp2/2pBBp2/2pBBp2/2pppp2/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 12);
-    delete newBoards;
     std::cout << "Checkpoint #4\n";
 
     //random bishops captures
     board = Board("8/3p3p/1p6/2B2B2/1n4n1/3p4/5n2/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 15);
-    delete newBoards;
     std::cout << "Checkpoint #5\n";
     
     std::cout << "Bishop Tests Passed\n\n";
@@ -421,62 +397,55 @@ void testKnightMoves() {
     std::cout << "Test Knight Moves: 7 Checkpoints\n";
     Board board;
     int numberOfBoards;
-    std::vector<Board>* newBoards;
+    std::vector<Board> newBoards;
 
     //knights on starting squares
     board = Board("8/8/8/8/8/8/8/1N4N1 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 6);
-    delete newBoards;
     std::cout << "Checkpoint #1\n";
 
     //knight with all squares blocked by team pawns and they can't move
     board = Board("2n1n3/1nP1Pn2/1P3P2/1n1N1n2/1Pn1nP2/2P1P3/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 0);
-    delete newBoards;
     std::cout << "Checkpoint #2\n";
 
     //knight with all squares blocked by enemy pawns
     board = Board("8/2p1p3/1p3p2/3N4/1p3p2/2p1p3/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 8);
-    delete newBoards;
     std::cout << "Checkpoint #3\n";
 
     //knight with both squares taken by team pawns and enemy pawns
     board = Board("4n1n1/4P1Pn/3p3P/5N1n/3p3P/4p1p1/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 4);
-    delete newBoards;
     std::cout << "Checkpoint #4\n";
 
     //black knight blocked by all team pawns
     board = Board("8/2p1p3/1pN1Np2/1N1n1N2/1p3p2/1Np1pN2/2N1N3/8 b - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 0);
-    delete newBoards;
     std::cout << "Checkpoint #5\n";
 
     //8 white knights in a row
     board = Board("8/8/8/8/NNNNNNNN/8/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 52);
-    delete newBoards;
     std::cout << "Checkpoint #6\n";
 
     //8 black knights in a row
     board = Board("8/8/8/nnnnnnnn/8/8/8/8 b - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 52);
-    delete newBoards;
     std::cout << "Checkpoint #7\n";
     
     std::cout << "Knight Tests Passed\n\n";
@@ -486,46 +455,41 @@ void testRookMoves() {
     std::cout << "Test Rook Moves: 5 Checkpoints\n";
     Board board;
     int numberOfBoards;
-    std::vector<Board>* newBoards;
+    std::vector<Board> newBoards;
 
     //Rooks on their starting squares
     board = Board("8/8/8/8/8/8/8/R6R w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 26);
-    delete newBoards;
     std::cout << "Checkpoint #1\n";
 
     //Rooks blocked in the center by pawns
     board = Board("8/8/2PPPP2/2PRRP2/2PRRP2/2PPPP2/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 4);
-    delete newBoards;
     std::cout << "Checkpoint #2\n";
 
     //Rooks blocked by enemy knights to test captures
     board = Board("8/8/4n3/8/2n1R2n/4n3/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 8);
-    delete newBoards;
     std::cout << "Checkpoint #3\n";
 
     //Random blocks and captures for white rooks
     board = Board("7n/2n2R1P/2P5/8/2R2q2/2R5/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 23);
-    delete newBoards;
     std::cout << "Checkpoint #4\n";
 
     //Random blocks and captures for black rooks
     board = Board("6N1/3Q2r1/8/6N1/1N1r4/3p4/3N2r1/8 b - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 24);
-    delete newBoards;
     std::cout << "Checkpoint #5\n";
     
     std::cout << "Rook Tests Passed\n\n";
@@ -535,54 +499,48 @@ void testQueenMoves() {
     std::cout << "Test Queen Moves: 6 Checkpoints\n";
     Board board;
     int numberOfBoards;
-    std::vector<Board>* newBoards;
+    std::vector<Board> newBoards;
 
     //Queen on starting square
     board = Board("8/8/8/8/8/8/8/3Q4 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 21);
-    delete newBoards;
     std::cout << "Checkpoint #1\n";
 
     //Queens in the center blocked by team pawns
     board = Board("8/8/2PPPP2/2PQQP2/2PQQP2/2PPPP2/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 4);
-    delete newBoards;
     std::cout << "Checkpoint #2\n";
 
     //Queens in the center blocked by enemy knights
     board = Board("8/8/2nnnn2/2nQQn2/2nQQn2/2nnnn2/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 20);
-    delete newBoards;
     std::cout << "Checkpoint #3\n";
 
     //White queens randomly blocked by team and enemy pieces
     board = Board("5n2/2n1nPn1/1n4P1/1P2QQ2/4PP2/1n6/1P6/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 18);
-    delete newBoards;
     std::cout << "Checkpoint #4\n";
 
     //Black queens randomly blocked by team and enemy pieces
     board = Board("8/8/N2q2p1/6P1/1N1p4/3N2q1/8/q5N1 b - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 43);
-    delete newBoards;
     std::cout << "Checkpoint #5\n";
 
     //Queens on the long dark square diagonal
     board = Board("7Q/6Q1/5Q2/4Q3/3Q4/2Q5/1Q6/Q7 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 136);
-    delete newBoards;
     std::cout << "Checkpoint #6\n";
     
     std::cout << "Queen Tests Passed\n\n";
@@ -592,86 +550,76 @@ void testKingMoves() {
     std::cout << "Test King Moves: 10 Checkpoints\n";
     Board board;
     int numberOfBoards;
-    std::vector<Board>* newBoards;
+    std::vector<Board> newBoards;
 
     //King on the starting square
     board = Board("8/8/8/8/8/8/8/4K3 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 5);
-    delete newBoards;
     std::cout << "Checkpoint #1\n";
 
     //King in the center
     board = Board("8/8/8/4K3/8/8/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 8);
-    delete newBoards;
     std::cout << "Checkpoint #2\n";
 
     //King in the center blocked by team pawns
     board = Board("8/8/3PPP2/3PKP2/3PPP2/8/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 3);
-    delete newBoards;
     std::cout << "Checkpoint #3\n";
 
     //King in the center blocked by 4 enemy kings
     board = Board("8/8/4k3/8/2k1K1k1/8/4k3/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 0);
-    delete newBoards;
     std::cout << "Checkpoint #4\n";
 
     //King with three enemy pawns behind him
     board = Board("8/8/8/8/2K5/1ppp4/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 8);
-    delete newBoards;
     std::cout << "Checkpoint #5\n";
 
     //Black King trapped by rooks in stalemate
     board = Board("3R1R2/8/8/7R/4k3/7R/8/8 b - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 0);
-    delete newBoards;
     std::cout << "Checkpoint #6\n";
 
     //White king castle long and short
     board = Board("8/8/8/8/8/8/8/R3K2R w KQ - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 26);
-    delete newBoards;
     std::cout << "Checkpoint #7\n";
 
     //Black king castle long and short
     board = Board("r3k2r/8/8/8/8/8/8/8 b kq - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 26);
-    delete newBoards;
     std::cout << "Checkpoint #8\n";
 
     //White king castle blocked by rooks attacking squares next to him
     board = Board("3r1r2/8/8/8/8/8/8/R3K2R w KQ - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 20);
-    delete newBoards;
     std::cout << "Checkpoint #9\n";
 
     //Black king castle blocked by rooks attacking squares next to him
     board = Board("r3k2r/8/8/8/8/8/8/3R1R2 b kq - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
-    numberOfBoards = newBoards->size();
+    numberOfBoards = newBoards.size();
     assert(numberOfBoards == 20);
-    delete newBoards;
     std::cout << "Checkpoint #10\n";
     
     std::cout << "King Tests Passed\n\n";
@@ -681,72 +629,66 @@ void testChecks() {
     std::cout << "Testing Checks: 6 Checkpoints\n";
     Board board;
     int numberOfChecks;
-    std::vector<Board>* newBoards;
+    std::vector<Board> newBoards;
 
     //3 rooks with 2 checks each
     board = Board("7k/8/8/8/8/R7/1R6/2R5 w - d3 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfChecks = 0;
-    for (int i = 0; i < newBoards->size(); i++) {
-        if (newBoards->at(i).state.check == 1) numberOfChecks++;
+    for (int i = 0; i < newBoards.size(); i++) {
+        if (newBoards.at(i).state.check == 1) numberOfChecks++;
     }
     assert(numberOfChecks == 6);
-    delete newBoards;
     std::cout << "Checkpoint #1\n";
 
     //all the pieces have a few checks each
     board = Board("6N1/8/8/3k4/8/4P3/2P4R/1Q3B2 w - d3 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfChecks = 0;
-    for (int i = 0; i < newBoards->size(); i++) {
-        if (newBoards->at(i).state.check == 1) numberOfChecks++;
+    for (int i = 0; i < newBoards.size(); i++) {
+        if (newBoards.at(i).state.check == 1) numberOfChecks++;
     }
     assert(numberOfChecks == 13);
-    delete newBoards;
     std::cout << "Checkpoint #2\n";
 
     //discovered checks
     board = Board("8/8/3k1P1R/8/5N2/3N4/7B/3R4 w - d3 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfChecks = 0;
-    for (int i = 0; i < newBoards->size(); i++) {
-        if (newBoards->at(i).state.check == 1) numberOfChecks++;
+    for (int i = 0; i < newBoards.size(); i++) {
+        if (newBoards.at(i).state.check == 1) numberOfChecks++;
     }
     assert(numberOfChecks == 15);
-    delete newBoards;
     std::cout << "Checkpoint #3\n";
 
     //knight promotions
     board = Board("8/1P1k1P2/8/8/8/8/8/8 w - d3 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfChecks = 0;
-    for (int i = 0; i < newBoards->size(); i++) {
-        if (newBoards->at(i).state.check == 1) numberOfChecks++;
+    for (int i = 0; i < newBoards.size(); i++) {
+        if (newBoards.at(i).state.check == 1) numberOfChecks++;
     }
     assert(numberOfChecks == 2);
-    delete newBoards;
     std::cout << "Checkpoint #4\n";
 
     //rook and queen promotions
     board = Board("3k4/1P3P2/8/8/8/8/8/8 w - d3 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfChecks = 0;
-    for (int i = 0; i < newBoards->size(); i++) {
-        if (newBoards->at(i).state.check == 1) numberOfChecks++;
+    for (int i = 0; i < newBoards.size(); i++) {
+        if (newBoards.at(i).state.check == 1) numberOfChecks++;
     }
     assert(numberOfChecks == 4);
-    delete newBoards;
     std::cout << "Checkpoint #5\n";
 
     //long castle check
     board = Board("3k4/8/8/8/8/8/8/R3K3 w Q - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfChecks = 0;
-    for (int i = 0; i < newBoards->size(); i++) {
-        if (newBoards->at(i).state.check == 1) numberOfChecks++;
+    for (int i = 0; i < newBoards.size(); i++) {
+        if (newBoards.at(i).state.check == 1) numberOfChecks++;
     }
     assert(numberOfChecks == 3);
-    delete newBoards;
     std::cout << "Checkpoint #6\n";
 
     std::cout << "Check Tests Passed\n\n";
@@ -756,50 +698,46 @@ void testCheckmates() {
     std::cout << "Testing Checkmate: 5 Checkpoints\n";
     Board board;
     int numberOfCheckmates;
-    std::vector<Board>* newBoards;
+    std::vector<Board> newBoards;
 
     //5 rooks each with mate in 1
     board = Board("8/5K1k/8/R7/R7/R7/R7/R7 w - d3 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfCheckmates = 0;
-    for (int i = 0; i < newBoards->size(); i++) {
-        if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;
+    for (int i = 0; i < newBoards.size(); i++) {
+        if (newBoards.at(i).state.checkMate == 1) numberOfCheckmates++;
     }
     assert(numberOfCheckmates == 5);
-    delete newBoards;
     std::cout << "Checkpoint #1\n";
 
     //queen with 3 checks that are not checkmate
     board = Board("8/8/8/2ppp2Q/2pk4/2ppp3/8/8 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfCheckmates = 0;
-    for (int i = 0; i < newBoards->size(); i++) {
-        if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;
+    for (int i = 0; i < newBoards.size(); i++) {
+        if (newBoards.at(i).state.checkMate == 1) numberOfCheckmates++;
     }
     assert(numberOfCheckmates == 0);
-    delete newBoards;
     std::cout << "Checkpoint #2\n";
 
     //3 smothered mates in the corner
     board = Board("8/8/8/8/6n1/3n4/6PP/3n2RK b - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfCheckmates = 0;
-    for (int i = 0; i < newBoards->size(); i++) {
-        if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;
+    for (int i = 0; i < newBoards.size(); i++) {
+        if (newBoards.at(i).state.checkMate == 1) numberOfCheckmates++;
     }
     assert(numberOfCheckmates == 3);
-    delete newBoards;
     std::cout << "Checkpoint #3\n";
 
     //that one opening with a smothered mate in the middle of the board
     board = Board("r1b1kbnr/pppp1Npp/8/8/3nq3/8/PPPPBP1P/RNBQKR2 b Qkq - 1 7");
     newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfCheckmates = 0;
-    for (int i = 0; i < newBoards->size(); i++) {
-        if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;
+    for (int i = 0; i < newBoards.size(); i++) {
+        if (newBoards.at(i).state.checkMate == 1) numberOfCheckmates++;
     }
     assert(numberOfCheckmates == 1);
-    delete newBoards;
     std::cout << "Checkpoint #4\n";
 
     //1B1Q1Q2/2R5/pQ4QN/RB2k3/1Q5Q/N4Q2/K2Q4/6Q1
@@ -807,11 +745,10 @@ void testCheckmates() {
     board = Board("1B1Q1Q2/2R5/pQ4QN/RB2k3/1Q5Q/N4Q2/K2Q4/6Q1 w - - 0 1");
     newBoards = MoveGenerator::getAllLegalBoards(board);
     numberOfCheckmates = 0;
-    for (int i = 0; i < newBoards->size(); i++) {
-        if (newBoards->at(i).state.checkMate == 1) numberOfCheckmates++;
+    for (int i = 0; i < newBoards.size(); i++) {
+        if (newBoards.at(i).state.checkMate == 1) numberOfCheckmates++;
     }
     assert(numberOfCheckmates == 105);
-    delete newBoards;
     std::cout << "Checkpoint #5\n";
 
     std::cout << "Checkmate Tests Passed\n\n";
@@ -826,16 +763,16 @@ void testNumberOfBoardsAtDepth5() {
     const int depth1Boards = 20;
     const int depth1Checks = 0;
     const int depth1Checkmates = 0;
-    std::vector<Board>* boards = new std::vector<Board>;
-    boards->push_back(board);
+    std::vector<Board> boards;
+    boards.push_back(board);
 
     boards = timeBoardsAtDepth(boards, 1);
-    numberOfBoards = boards->size();
+    numberOfBoards = boards.size();
     numberOfChecks = 0;
     numberOfCheckmates = 0;
     for (int i = 0; i < numberOfBoards; i++) {
-        if (boards->at(i).state.check) numberOfChecks++;
-        if (boards->at(i).state.checkMate) numberOfCheckmates++;
+        if (boards.at(i).state.check) numberOfChecks++;
+        if (boards.at(i).state.checkMate) numberOfCheckmates++;
     }
 
     assert(depth1Boards == numberOfBoards);
@@ -851,12 +788,12 @@ void testNumberOfBoardsAtDepth5() {
     const int depth2Checkmates = 0;
 
     boards = timeBoardsAtDepth(boards, 1);
-    numberOfBoards = boards->size();
+    numberOfBoards = boards.size();
     numberOfChecks = 0;
     numberOfCheckmates = 0;
     for (int i = 0; i < numberOfBoards; i++) {
-        if (boards->at(i).state.check) numberOfChecks++;
-        if (boards->at(i).state.checkMate) numberOfCheckmates++;
+        if (boards.at(i).state.check) numberOfChecks++;
+        if (boards.at(i).state.checkMate) numberOfCheckmates++;
     }
 
     assert(depth2Boards == numberOfBoards);
@@ -872,12 +809,12 @@ void testNumberOfBoardsAtDepth5() {
     const int depth3Checkmates = 0;
 
     boards = timeBoardsAtDepth(boards, 1);
-    numberOfBoards = boards->size();
+    numberOfBoards = boards.size();
     numberOfChecks = 0;
     numberOfCheckmates = 0;
     for (int i = 0; i < numberOfBoards; i++) {
-        if (boards->at(i).state.check) numberOfChecks++;
-        if (boards->at(i).state.checkMate) numberOfCheckmates++;
+        if (boards.at(i).state.check) numberOfChecks++;
+        if (boards.at(i).state.checkMate) numberOfCheckmates++;
     }
     
     assert(depth3Boards == numberOfBoards);
@@ -893,12 +830,12 @@ void testNumberOfBoardsAtDepth5() {
     const int depth4Checkmates = 8;
 
     boards = timeBoardsAtDepth(boards, 1);
-    numberOfBoards = boards->size();
+    numberOfBoards = boards.size();
     numberOfChecks = 0;
     numberOfCheckmates = 0;
     for (int i = 0; i < numberOfBoards; i++) {
-        if (boards->at(i).state.check) numberOfChecks++;
-        if (boards->at(i).state.checkMate) numberOfCheckmates++;
+        if (boards.at(i).state.check) numberOfChecks++;
+        if (boards.at(i).state.checkMate) numberOfCheckmates++;
     }
 
     assert(depth4Boards == numberOfBoards);
@@ -914,15 +851,14 @@ void testNumberOfBoardsAtDepth5() {
     const int depth5Checkmates = 347;
 
     boards = timeBoardsAtDepth(boards, 1);
-    numberOfBoards = boards->size();
+    numberOfBoards = boards.size();
     numberOfChecks = 0;
     numberOfCheckmates = 0;
-    std::cout << (boards->at(4).state.whiteToMove ? "white to move\n" : "black to move\n");
     for (int i = 0; i < numberOfBoards; i++) {
-        if (boards->at(i).state.check) numberOfChecks++;
-        if (boards->at(i).state.checkMate) {
+        if (boards.at(i).state.check) numberOfChecks++;
+        if (boards.at(i).state.checkMate) {
             if (numberOfCheckmates > 500 && numberOfCheckmates < 600) {
-                boards->at(i).printBoard();
+                boards.at(i).printBoard();
                 std::cout << '\n';
             }
             numberOfCheckmates++;
@@ -936,8 +872,6 @@ void testNumberOfBoardsAtDepth5() {
     assert(depth5Checkmates == numberOfCheckmates);
     std::cout << "Depth 5 number of checkmates correct\n";
     std::cout << '\n';
-
-    delete boards;
 }
 
 int main(void) {
