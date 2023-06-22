@@ -288,7 +288,7 @@ float Evaluation::pawnEval(Board board) {
 
 
 float Evaluation::evaluate(Board board) {
-    if (board.state.checkMate == 1) return board.state.whiteToMove ? 999999 : -999999;
+    if (board.state.checkMate == 1) return (board.state.whiteToMove ? -99999 : 99999);
 
     int kingSafetyValue = kingSafety(board);
     int activityValue = pieceActivity(board);

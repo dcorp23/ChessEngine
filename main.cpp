@@ -4,10 +4,19 @@
 #include "attackTables.hpp"
 #include "moveGen.hpp"
 #include <chrono>
+#include <mutex>
+#include <future>
+#include <queue>
+#include <thread>
 #define INFINITY 99999999
+#define NUM_THREADS 8
+#define MAX_DEPTH 3
+
+static std::mutex evalMutex;
+std::vector<std::future<void>> futures;
 
 float minimax(Board board, int depth, bool isMaximizingPlayer, float alpha, float beta) {
-    if (depth == 0) return Evaluation::evaluate(board);
+    if (depth == 0 || board.state.checkMate == 1) return Evaluation::evaluate(board);
     
     std::vector<Board> boards = MoveGenerator::getAllLegalBoards(board);
     int boardsSize = boards.size();
@@ -34,13 +43,21 @@ float minimax(Board board, int depth, bool isMaximizingPlayer, float alpha, floa
     }
 }
 
+void threadMinMax(Board board, int currentIndex, int* bestIndex, float* bestEval, int depth) {
+    float eval = minimax(board, depth, board.state.whiteToMove ? true : false, -INFINITY, INFINITY);
+    std::lock_guard<std::mutex> lock(evalMutex);
+    if (board.state.whiteToMove ? eval < *bestEval : eval > *bestEval) {
+        *bestIndex = currentIndex;
+        *bestEval = eval;
+    }
+}
+
 int main(void) {
     AttackTables::initAttackTables();
     int playerSide;
     std::cout << "Pick a side: white = 1, black = 0\n";
     std::cin >> playerSide;
     Board board = Board(startingFEN);
-    std::cout << "checkmate = " << board.state.checkMate << '\n';
 
     while (!board.state.checkMate) {
         std::cout << (board.state.whiteToMove ? "\nWhite to move\n" : "\nBlack to move\n");
@@ -95,20 +112,47 @@ int main(void) {
             }
         }
         else {
-            float eval;
-            float extreme = board.state.whiteToMove ? -INFINITY : INFINITY;
             Board nextBoard;
+            int bestIndex = 0;
+            float bestEval = board.state.whiteToMove ? -INFINITY : INFINITY;
 
             int boardsSize = boards.size();
             for (int i = 0; i < boardsSize; i++) {
-                eval = minimax(boards.at(i), 3, board.state.whiteToMove ? false : true, -INFINITY, INFINITY);
-                if (board.state.whiteToMove ? eval > extreme : eval < extreme) {
-                    nextBoard = boards.at(i);
-                    extreme = eval;
+                if (futures.size() < NUM_THREADS) {
+                    futures.push_back(std::async(std::launch::async, threadMinMax, boards.at(i), i, &bestIndex, &bestEval, MAX_DEPTH));
+                }
+                else {
+                    //waits while the max number of threads are active
+                    int j = 0;
+                    while (true) {
+                        //checks if a thread has finnished then if it has then break out and start a new thread
+                        if (futures.at(j).wait_for(std::chrono::milliseconds(500)) == std::future_status::ready) {
+                            futures.erase(futures.begin() + j);
+                            break;
+                        }
+                        j++;
+                        if (j == futures.size()) j = 0;
+                    }
+                    i--;
                 }
             }
 
-            std::cout << "\nEvaluation: " << extreme << '\n';
+            //wait for threads to finish
+            //while threads are still active
+            int size = futures.size();
+            while (size != 0) {
+                for (int i = 0; i < futures.size(); i++) { //loop through threads
+                    //if a thread is done remove it
+                    if (futures.at(i).wait_for(std::chrono::milliseconds(500)) == std::future_status::ready) {
+                        futures.erase(futures.begin() + i);
+                        size--;
+                    }
+                }
+            }
+            
+            //get the best best board
+            nextBoard = boards.at(bestIndex);
+            std::cout << "\nEvaluation: " << bestEval << '\n';
             board = nextBoard;
         }
     }
