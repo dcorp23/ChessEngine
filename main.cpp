@@ -9,22 +9,22 @@
 #include <queue>
 #include <thread>
 #define INFINITY 99999999
-#define NUM_THREADS 8
-#define MAX_DEPTH 3
+#define NUM_THREADS 4
+#define MAX_DEPTH 5
 
 static std::mutex evalMutex;
 std::vector<std::future<void>> futures;
 
-float minimax(Board board, int depth, bool isMaximizingPlayer, float alpha, float beta) {
-    if (depth == 0 || board.state.checkMate == 1) return Evaluation::evaluate(board);
+float minimax(Board* board, int depth, bool isMaximizingPlayer, float alpha, float beta) {
+    if (depth == 0 || board->state.checkMate == 1) return Evaluation::evaluate(board);
     
-    std::vector<Board> boards = MoveGenerator::getAllLegalBoards(board);
+    std::vector<Board> boards = MoveGenerator::getAllLegalBoards(*board);
     int boardsSize = boards.size();
 
     if (isMaximizingPlayer)  {
         float bestVal = -INFINITY;
         for (int i = 0; i < boardsSize; i++)  {
-            float value = minimax(boards.at(i), depth - 1, false, alpha, beta);
+            float value = minimax(&boards.at(i), depth - 1, false, alpha, beta);
             bestVal = std::max( bestVal, value);
             alpha = std::max( alpha, value);
             if (beta <= alpha) break;
@@ -34,7 +34,7 @@ float minimax(Board board, int depth, bool isMaximizingPlayer, float alpha, floa
     else {
         float bestVal = INFINITY;
         for (int i = 0; i < boardsSize; i++) {
-            float value = minimax(boards.at(i), depth - 1, true, alpha, beta);
+            float value = minimax(&boards.at(i), depth - 1, true, alpha, beta);
             bestVal = std::min( bestVal, value);
             beta = std::min( beta, value);
             if (beta <= alpha) break;
@@ -43,10 +43,10 @@ float minimax(Board board, int depth, bool isMaximizingPlayer, float alpha, floa
     }
 }
 
-void threadMinMax(Board board, int currentIndex, int* bestIndex, float* bestEval, int depth) {
-    float eval = minimax(board, depth, board.state.whiteToMove ? true : false, -INFINITY, INFINITY);
+void threadMinMax(Board* board, int currentIndex, int* bestIndex, float* bestEval, int depth, float* alpha, float* beta) {
+    float eval = minimax(board, depth, board->state.whiteToMove ? true : false, *alpha, *beta);
     std::lock_guard<std::mutex> lock(evalMutex);
-    if (board.state.whiteToMove ? eval < *bestEval : eval > *bestEval) {
+    if (board->state.whiteToMove ? eval < *bestEval : eval > *bestEval) {
         *bestIndex = currentIndex;
         *bestEval = eval;
     }
@@ -78,12 +78,12 @@ int main(void) {
 
             MoveCode moveCode;
             std::vector<MoveCode> moveList;
-            if (piece == 0) moveList = MoveGenerator::getPawnMoves(board);
-            if (piece == 1) moveList = MoveGenerator::getBishopMoves(board);
-            if (piece == 2) moveList = MoveGenerator::getKnightMoves(board);
-            if (piece == 3) moveList = MoveGenerator::getRookMoves(board);
-            if (piece == 4) moveList = MoveGenerator::getQueenMoves(board);
-            if (piece == 5) moveList = MoveGenerator::getKingMoves(board);
+            if (piece == 0) MoveGenerator::getPawnMoves(board, &moveList);
+            if (piece == 1) MoveGenerator::getBishopMoves(board, &moveList);
+            if (piece == 2) MoveGenerator::getKnightMoves(board, &moveList);
+            if (piece == 3) MoveGenerator::getRookMoves(board, &moveList);
+            if (piece == 4) MoveGenerator::getQueenMoves(board, &moveList);
+            if (piece == 5) MoveGenerator::getKingMoves(board, &moveList);
 
             std::vector<MoveCode> filteredMoveList;
             for (int i = 0; i < moveList.size(); i++) {
@@ -115,11 +115,13 @@ int main(void) {
             Board nextBoard;
             int bestIndex = 0;
             float bestEval = board.state.whiteToMove ? -INFINITY : INFINITY;
-
+            float alpha = -INFINITY;
+            float beta = INFINITY;
+            
             int boardsSize = boards.size();
             for (int i = 0; i < boardsSize; i++) {
                 if (futures.size() < NUM_THREADS) {
-                    futures.push_back(std::async(std::launch::async, threadMinMax, boards.at(i), i, &bestIndex, &bestEval, MAX_DEPTH));
+                    futures.push_back(std::async(std::launch::async, threadMinMax, &boards.at(i), i, &bestIndex, &bestEval, MAX_DEPTH, &alpha, &beta));
                 }
                 else {
                     //waits while the max number of threads are active
@@ -157,6 +159,6 @@ int main(void) {
         }
     }
 
-
+    board.printBoard();
     return 0;
 }

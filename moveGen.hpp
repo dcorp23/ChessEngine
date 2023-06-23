@@ -9,29 +9,29 @@ namespace MoveGenerator {
     MoveCode createMove(int startSquare, int endSquare, int piece, int capture);
 
     //get a vector of movecodes for the pawns in the position
-    std::vector<MoveCode> getPawnMoves(Board board);
+    void getPawnMoves(Board board, std::vector<MoveCode>* moveList);
 
     //get a vector of movecodes for the bishops in the position
-    std::vector<MoveCode> getBishopMoves(Board board);
+    void getBishopMoves(Board board, std::vector<MoveCode>* moveList);
 
     //get a vector of movecodes for the knights in the position
-    std::vector<MoveCode> getKnightMoves(Board board);
+    void getKnightMoves(Board board, std::vector<MoveCode>* moveList);
 
     //get a vector of movecodes for the rooks in the position
-    std::vector<MoveCode> getRookMoves(Board board);
+    void getRookMoves(Board board, std::vector<MoveCode>* moveList);
 
     //get a vector of movecodes for the queens in the position
-    std::vector<MoveCode> getQueenMoves(Board board);
+    void getQueenMoves(Board board, std::vector<MoveCode>* moveList);
 
     //get a vector of movecodes for the king in the position
-    std::vector<MoveCode> getKingMoves(Board board);
+    void getKingMoves(Board board, std::vector<MoveCode>* moveList);
 
     //calculates all pseudo legal moves and returns a vector for them
-    std::vector<MoveCode> calculateAllMoves(Board board);
+    void calculateAllMoves(Board board, std::vector<MoveCode>* moveList);
 
     //goes through list of movecodes and makes moves on the given board
     //and returns a pointer to a vector of boards that have been validated to be legal moves
-    std::vector<Board> validateAllMoves(Board board, std::vector<MoveCode> moveList);
+    void validateAllMoves(Board board, std::vector<MoveCode>* moveList, std::vector<Board>* validBoards);
 
     //checks if a square is attacked by a certain side given the occupancy map
     bool isSquareAttacked(int square, int side, Board board, map occupancy);

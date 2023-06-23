@@ -18,49 +18,114 @@ const map FILES[8] = {
     EFILE, FFILE, GFILE, HFILE
 };
 
+const int whiteQueenSquareEval[64] = {
+    -30, -30, -30, -30, -30, -30, -30, -30, 
+    -30, -30, -30, -30, -30, -30, -30, -30, 
+    -30, -30, -30, -30, -30, -30, -30, -30, 
+    -30, -30, -30, -30, -30, -30, -30, -30, 
+    -30, -30, -30, -30, -30, -30, -30, -30, 
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0
+};
+
+//dont want to move queen, shouldn't go far
+const int blackQueenSquareEval[64] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    -30, -30, -30, -30, -30, -30, -30, -30, 
+    -30, -30, -30, -30, -30, -30, -30, -30, 
+    -30, -30, -30, -30, -30, -30, -30, -30, 
+    -30, -30, -30, -30, -30, -30, -30, -30, 
+    -30, -30, -30, -30, -30, -30, -30, -30
+};
+
+const int kingSquareEval[64] = {
+    350, 400, 50, 0, 0, 100, 400, 350, 
+    0, 0, -50, -100, -100, -50, 0, 0, 
+    -50, -50, -150, -150, -150, -150, -50, -50,
+    -50, -100, -200, -300, -300, -200, -100, -50,
+    -50, -100, -200, -300, -300, -200, -100, -50,
+    -50, -50, -150, -150, -150, -150, -50, -50, 
+    0, 0, -50, -100, -100, -50, 0, 0,
+    350, 400, 50, 0, 0, 100, 400, 350
+};
+
+const int knightSquareEval[64] = {
+    -75, -50, -40, -35, -35, -40, -50, -75, 
+    -50, -50, -35, -10, -10, -35, -50, -50, 
+    -40, -20, 60, 20, 20, 60, -20, -40, 
+    -20, -5, 25, 35, 35, 25, -5, -20, 
+    -20, -5, 25, 35, 35, 25, -5, -20, 
+    -40, -20, 60, 20, 20, 60, -20, -40, 
+    -50, -50, -35, -10, -10, -35, -50, -50, 
+    -75, -30, -40, -35, -35, -40, -30, -75
+};
+
+const int whitePawnSquareEval[64] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    75, 75, 75, 75, 75, 75, 75, 75,
+    20, 20, 20, 50, 50, 20, 20, 20,
+    10, 10, 20, 50, 50, 20, 10, 10,
+    0, 0, 10, 50, 50, -10, 0, 0,
+    0, 0, 0, 30, 30, -20, 0, 0,
+    0, 0, 0, -30, -30, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+};
+const int blackPawnSquareEval[64] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, -30, -30, 0, 0, 0,
+    0, 0, 0, 30, 30, -20, 0, 0,
+    0, 0, 10, 50, 50, -10, 0, 0,
+    10, 10, 20, 50, 50, 20, 10, 10,
+    20, 20, 20, 50, 50, 20, 20, 20,
+    75, 75, 75, 75, 75, 75, 75, 75,
+    0, 0, 0, 0, 0, 0, 0, 0,
+};
+
+const float materialConst = 1;
+const float kingSafetyConst = 1;
+const float activityConst = 1;
+const float pawnConst = 1;
+const float bishopConst = 1;
+const float knightConst = 1;
+const float rookConst = 1;
+const float queenConst = 1;
+
+int determineGamePhase(Board* board);
 
 //evaluates the material of the position returning a negative score for black
 //and returns a 0 for the position being equal in material
-float Evaluation::material(Board board) {
+float material(Board* board) {
     int score = 0;
 
-    int pawns = getBitCount(board.bitMaps[WPawn]) - getBitCount(board.bitMaps[BPawn]);
-    int bishops = getBitCount(board.bitMaps[WBishop]) - getBitCount(board.bitMaps[BBishop]);
-    int knights = getBitCount(board.bitMaps[WKnight]) - getBitCount(board.bitMaps[BKnight]);
-    int rooks = getBitCount(board.bitMaps[WRook]) - getBitCount(board.bitMaps[BRook]);
-    int queens = getBitCount(board.bitMaps[WQueen]) - getBitCount(board.bitMaps[BQueen]);
+    int pawns = getBitCount(board->bitMaps[WPawn]) - getBitCount(board->bitMaps[BPawn]);
+    int bishops = getBitCount(board->bitMaps[WBishop]) - getBitCount(board->bitMaps[BBishop]);
+    int knights = getBitCount(board->bitMaps[WKnight]) - getBitCount(board->bitMaps[BKnight]);
+    int rooks = getBitCount(board->bitMaps[WRook]) - getBitCount(board->bitMaps[BRook]);
+    int queens = getBitCount(board->bitMaps[WQueen]) - getBitCount(board->bitMaps[BQueen]);
 
     score = (pawns * 100) + (bishops * 320) + (knights * 320) + (rooks * 500) + (queens * 900);
     return score;
 }
 
 //evaluates the safety of the king
-float Evaluation::kingSafety(Board board) {
-    const int squareEval[64] = {
-        300, 300, 50, 50, 50, 100, 300, 250, 
-        0, 0, -50, -100, -100, -50, 0, 0, 
-        -50, -50, -150, -150, -150, -150, -50, -50,
-        -50, -100, -200, -300, -300, -200, -100, -50,
-        -50, -100, -200, -300, -300, -200, -100, -50,
-        -50, -50, -150, -150, -150, -150, -50, -50, 
-        0, 0, -50, -100, -100, -50, 0, 0,
-        300, 300, 50, 50, 50, 100, 300, 250
-    };
+float kingSafety(Board* board, int gamePhase) {
+    int whiteKingSquare = getLSBIndex(board->bitMaps[WKing]);
+    int blackKingSquare = getLSBIndex(board->bitMaps[BKing]);
+    int whiteScore = kingSquareEval[whiteKingSquare];
+    int blackScore = kingSquareEval[blackKingSquare];
 
-    int whiteKingSquare = getLSBIndex(board.bitMaps[WKing]);
-    int blackKingSquare = getLSBIndex(board.bitMaps[BKing]);
-    int whiteScore = squareEval[whiteKingSquare];
-    int blackScore = squareEval[blackKingSquare];
-
-    whiteScore += (board.state.whiteShortCastle ? 0 : -50);
-    whiteScore += (board.state.whiteLongCastle ? 0 : -30);
-    blackScore += (board.state.blackShortCastle ? 0 : -50);
-    blackScore += (board.state.blackLongCastle ? 0 : -30);
+    whiteScore += (board->state.whiteShortCastle ? 0 : -50);
+    whiteScore += (board->state.whiteLongCastle ? 0 : -30);
+    blackScore += (board->state.blackShortCastle ? 0 : -50);
+    blackScore += (board->state.blackLongCastle ? 0 : -30);
 
     return whiteScore - blackScore;
 }
 
-float bishopEval(Board board) {
+float bishopEval(Board* board, int gamePhase) {
     //check if the sides have the bishop pair doesn't
     //account for bishop promotions so if you promote on
     //the same square color it will count as bishop pair
@@ -68,8 +133,8 @@ float bishopEval(Board board) {
     float whiteScore = 0;
     float blackScore = 0;
 
-    bool whitePair = getBitCount(board.bitMaps[WBishop]) >= 2;
-    bool blackPair = getBitCount(board.bitMaps[BBishop]) >= 2;
+    bool whitePair = getBitCount(board->bitMaps[WBishop]) >= 2;
+    bool blackPair = getBitCount(board->bitMaps[BBishop]) >= 2;
 
     //give points for bishop pair
     //else check if our bishop is bad or not
@@ -78,8 +143,8 @@ float bishopEval(Board board) {
     if (whitePair) whiteScore += 150;
     else {
         //get which square the bishop is on
-        bool whiteLightSquare = (getLSBIndex(board.bitMaps[WBishop]) % 2 == 0 ? true : false);
-        map whitePawns = board.bitMaps[WPawn]; //get a copy of the whit pawns bitmap
+        bool whiteLightSquare = (getLSBIndex(board->bitMaps[WBishop]) % 2 == 0 ? true : false);
+        map whitePawns = board->bitMaps[WPawn]; //get a copy of the whit pawns bitmap
         int numPawns = getBitCount(whitePawns); //number of pawns
         int lightPawns = 0; //pawns on light squares
         int darkPawns = 0; //pawns on dark squares
@@ -103,8 +168,8 @@ float bishopEval(Board board) {
     if (blackPair) blackScore += 150;
     else {
         //get which square the bishop is on
-        bool blackLightSquare = (getLSBIndex(board.bitMaps[BBishop]) % 2 == 0 ? true : false);
-        map blackPawns = board.bitMaps[BPawn]; //get a copy of the whit pawns bitmap
+        bool blackLightSquare = (getLSBIndex(board->bitMaps[BBishop]) % 2 == 0 ? true : false);
+        map blackPawns = board->bitMaps[BPawn]; //get a copy of the whit pawns bitmap
         int numPawns = getBitCount(blackPawns); //number of pawns
         int lightPawns = 0; //pawns on light squares
         int darkPawns = 0; //pawns on dark squares
@@ -128,25 +193,14 @@ float bishopEval(Board board) {
     return whiteScore - blackScore;
 }
 
-float knightEval(Board board) {
+float knightEval(Board* board, int gamePhase) {
     //find the half open files and see if there are potential knight outposts
     //see if there is a knight there or see if we can move a knight towards that square
     //lose points for knights on the edge of the board
-    const int knightSquareEval[64] = {
-        -75, -50, -40, -35, -35, -40, -50, -75, 
-        -50, -50, -35, -10, -10, -35, -50, -50, 
-        -40, -20, 60, 20, 20, 60, -20, -40, 
-        -20, -5, 25, 35, 35, 25, -5, -20, 
-        -20, -5, 25, 35, 35, 25, -5, -20, 
-        -40, -20, 60, 20, 20, 60, -20, -40, 
-        -50, -50, -35, -10, -10, -35, -50, -50, 
-        -75, -30, -40, -35, -35, -40, -30, -75
-    };
-
     float whiteScore = 0;
     float blackScore = 0;
 
-    map whiteKnights = board.bitMaps[WKnight];
+    map whiteKnights = board->bitMaps[WKnight];
     int numberOfWhiteKnights = getBitCount(whiteKnights);
     for (int i = 0; i < numberOfWhiteKnights; i++) {
         int square = getLSBIndex(whiteKnights);
@@ -155,7 +209,7 @@ float knightEval(Board board) {
         whiteScore += knightSquareEval[square];
     }
 
-    map blackKnights = board.bitMaps[BKnight];
+    map blackKnights = board->bitMaps[BKnight];
     int numberOfBlackKnights = getBitCount(blackKnights);
     for (int i = 0; i < numberOfBlackKnights; i++) {
         int square = getLSBIndex(blackKnights);
@@ -167,15 +221,15 @@ float knightEval(Board board) {
     return whiteScore - blackScore;
 }
 
-float rookEval(Board board) {
+float rookEval(Board* board, int gamePhase) {
     //look for open files and see if we can put rooks there
     //see if the rook is on the 2nd or 7th rank
     float whiteScore = 0;
     float blackScore = 0;
 
-    map allPawns = board.bitMaps[WPawn] | board.bitMaps[BPawn];
+    map allPawns = board->bitMaps[WPawn] | board->bitMaps[BPawn];
 
-    map whiteRooks = board.bitMaps[WRook];
+    map whiteRooks = board->bitMaps[WRook];
     int numberOfWhiteRooks = getBitCount(whiteRooks);
     for (int i = 0; i < numberOfWhiteRooks; i++) {
         int square = getLSBIndex(whiteRooks);
@@ -189,7 +243,7 @@ float rookEval(Board board) {
         if (col == 3 || col == 6) whiteScore += 25; //center the rooks
     }
 
-    map blackRooks = board.bitMaps[BRook];
+    map blackRooks = board->bitMaps[BRook];
     int numberOfBlackRooks = getBitCount(blackRooks);
     for (int i = 0; i < numberOfBlackRooks; i++) {
         int square = getLSBIndex(blackRooks);
@@ -206,106 +260,121 @@ float rookEval(Board board) {
     return whiteScore - blackScore;
 }
 
+int queenEval(Board* board, int gamePhase) {
+    if (gamePhase == 0) { //opening
+        //we want the opposite queen so we can evaluate the last move
+        map queen = board->bitMaps[board->state.whiteToMove ? BQueen : WQueen];
+        int queenSquare = getLSBIndex(queen);
+        return board->state.whiteToMove ? blackQueenSquareEval[queenSquare] : whiteQueenSquareEval[queenSquare];
+    } 
+    return 0;
+}
+
 //gets the pseudo legal moves for bishops knights
 //queens and rooks and will count how many moves they have
-float Evaluation::pieceActivity(Board board) {
+float pieceActivity(Board* board) {
     float whiteSquares = 0;
     float blackSquares = 0;
 
-    Board tempBoard = board;
+    Board tempBoard = *board;
 
     tempBoard.state.whiteToMove = 1;
-    for (int i = WBishop; i <= WQueen; i++) {
-        if (i == WBishop) whiteSquares += MoveGenerator::getBishopMoves(tempBoard).size();
-        if (i == WKnight) whiteSquares += MoveGenerator::getKnightMoves(tempBoard).size();
-        if (i == WRook) whiteSquares += MoveGenerator::getRookMoves(tempBoard).size();
-        if (i == WQueen) whiteSquares += MoveGenerator::getQueenMoves(tempBoard).size();
+    int whiteEndPiece = WQueen;
+    if (determineGamePhase(&tempBoard) == 0) whiteEndPiece = WKnight; //opening
+    std::vector<MoveCode> whiteMoveList;
+    for (int i = WBishop; i <= whiteEndPiece; i++) {
+        if (i == WBishop) MoveGenerator::getBishopMoves(tempBoard, &whiteMoveList);
+        if (i == WKnight) MoveGenerator::getKnightMoves(tempBoard, &whiteMoveList);
+        if (i == WRook) MoveGenerator::getRookMoves(tempBoard, &whiteMoveList);
+        if (i == WQueen) MoveGenerator::getQueenMoves(tempBoard, &whiteMoveList);
     }
+    whiteSquares += whiteMoveList.size();
 
     tempBoard.state.whiteToMove = 0;
-    for (int i = BBishop; i <= BQueen; i++) {
-        if (i == BBishop) blackSquares += MoveGenerator::getBishopMoves(tempBoard).size();
-        if (i == BKnight) blackSquares += MoveGenerator::getKnightMoves(tempBoard).size();
-        if (i == BRook) blackSquares += MoveGenerator::getRookMoves(tempBoard).size();
-        if (i == BQueen) blackSquares += MoveGenerator::getQueenMoves(tempBoard).size();
+    int blackEndPiece = BQueen;
+    if (determineGamePhase(&tempBoard) == 0) blackEndPiece = BKnight; //opening
+    std::vector<MoveCode> blackMoveList;
+    for (int i = BBishop; i <= blackEndPiece; i++) {
+        if (i == BBishop) MoveGenerator::getBishopMoves(tempBoard, &blackMoveList);
+        if (i == BKnight) MoveGenerator::getKnightMoves(tempBoard, &blackMoveList);
+        if (i == BRook) MoveGenerator::getRookMoves(tempBoard, &blackMoveList);
+        if (i == BQueen) MoveGenerator::getQueenMoves(tempBoard, &blackMoveList);
     }
+    blackSquares += blackMoveList.size();
 
-    whiteSquares = (whiteSquares * 15) * (board.state.whiteToMove ? 1.2 : 1); 
-    blackSquares = (blackSquares * 15) * (board.state.whiteToMove ? 1 : 1.2); 
+    whiteSquares = (whiteSquares * 15) * (board->state.whiteToMove ? 1.1 : 1); 
+    blackSquares = (blackSquares * 15) * (board->state.whiteToMove ? 1 : 1.1); 
 
     return whiteSquares - blackSquares;
 }
 
 //counts then number of pawns in the center for that side
-float Evaluation::pawnEval(Board board) {
+float pawnEval(Board* board, int gamePhase) {
     //use constant evaluation of predetermined squares
     //which encourage pushing the center pawns and discourage
     //pushing the wing pawns
-    const int whiteSquareEval[64] = {
-        0, 0, 0, 0, 0, 0, 0, 0, 
-        75, 75, 75, 75, 75, 75, 75, 75,
-        20, 20, 20, 50, 50, 20, 20, 20,
-        20, 20, 20, 50, 50, 20, 20, 20,
-        10, 10, 30, 50, 50, 10, 10, 10,
-        20, 20, 30, 30, 30, 10, 20, 20,
-        20, 20, 30, -30, -30, 30, 20, 20,
-        0, 0, 0, 0, 0, 0, 0, 0,
-    };
-    const int blackSquareEval[64] = {
-        0, 0, 0, 0, 0, 0, 0, 0, 
-        20, 20, 30, -30, -30, 30, 20, 20,
-        20, 20, 30, 30, 30, 10, 20, 20,
-        10, 10, 30, 50, 50, 10, 10, 10,
-        20, 20, 20, 50, 50, 20, 20, 20,
-        20, 20, 20, 50, 50, 20, 20, 20,
-        75, 75, 75, 75, 75, 75, 75, 75,
-        0, 0, 0, 0, 0, 0, 0, 0,
-    };
-
     float whiteScore = 0;
     float blackScore = 0;
 
-    map whitePawns = board.bitMaps[WPawn];
+    map whitePawns = board->bitMaps[WPawn];
     int numberOfWhitePawns = getBitCount(whitePawns);
     for (int i = 0; i < numberOfWhitePawns; i++) {
         int square = getLSBIndex(whitePawns);
         whitePawns = popLSB(whitePawns);
 
-        whiteScore += whiteSquareEval[square];
+        whiteScore += whitePawnSquareEval[square];
     }
 
-    map blackPawns = board.bitMaps[BPawn];
+    map blackPawns = board->bitMaps[BPawn];
     int numberOfblackPawns = getBitCount(blackPawns);
     for (int i = 0; i < numberOfblackPawns; i++) {
         int square = getLSBIndex(blackPawns);
         blackPawns = popLSB(blackPawns);
 
-        blackScore += blackSquareEval[square];
+        blackScore += blackPawnSquareEval[square];
     }
     
     return whiteScore - blackScore;
 }
 
+//returns either 0, 1 for opening or middlegame
+//this is side depenent and will determine whether a 
+//side needs to focus on development or can attack
+int determineGamePhase(Board* board) {
+    int openingScore = 0;
 
-float Evaluation::evaluate(Board board) {
-    if (board.state.checkMate == 1) return (board.state.whiteToMove ? -99999 : 99999);
+    //king out of center
+    //we want to check the other team because we are evaluating it from the point of view of 
+    //the last move that was doneso we can see if they still need to develop from their or not
+    map centerKing = 0x0000000000001C1C << (!board->state.whiteToMove ? 56 : 0);
+    if (board->bitMaps[(!board->state.whiteToMove) ? WKing : BKing] & centerKing) return 0;
+    return 1;
+}
 
-    int kingSafetyValue = kingSafety(board);
-    int activityValue = pieceActivity(board);
+float Evaluation::evaluate(Board* board) {
+    if (board->state.checkMate == 1) return (board->state.whiteToMove ? -99999 : 99999);
+
+    int gamePhase;
+    gamePhase = determineGamePhase(board);
+
+    int opening, middleGame;
+    if (gamePhase == 0) {
+        opening = 1;
+        middleGame = 0;
+    } else {
+        opening = 0;
+        middleGame = 1;
+    }
+
+    int kingSafetyValue = kingSafety(board, gamePhase);
+    float activityValue = pieceActivity(board);
     int materialValue = material(board);
-    int pawnValue = pawnEval(board);
-    int bishopValue = bishopEval(board);
-    int knightValue = knightEval(board);
-    int rookValue = rookEval(board);
-
-    const float materialConst = 1;
-    const float kingSafetyConst = 1;
-    const float activityConst = 1;
-    const float pawnConst = 1;
-    const float bishopConst = 1;
-    const float knightConst = 1;
-    const float rookConst = 1;
-
+    int pawnValue = pawnEval(board, gamePhase);
+    int bishopValue = bishopEval(board, gamePhase);
+    int knightValue = knightEval(board, gamePhase);
+    int rookValue = rookEval(board, gamePhase);
+    int queenValue = queenEval(board, gamePhase);
+    
     return ((materialConst * materialValue) + (kingSafetyConst * kingSafetyValue) + (activityConst * activityValue) + (pawnConst * pawnValue) + 
-            (bishopConst * bishopValue) + (knightConst * knightValue) + (rookConst * rookValue));
+            (bishopConst * bishopValue) + (knightConst * knightValue) + (rookConst * rookValue) + (queenConst * queenValue));
 }
