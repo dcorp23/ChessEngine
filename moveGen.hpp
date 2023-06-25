@@ -36,6 +36,9 @@ namespace MoveGenerator {
     //checks if a square is attacked by a certain side given the occupancy map
     bool isSquareAttacked(int square, int side, Board board, map occupancy);
 
+    //checks if the given board is a valid board
+    bool isBoardValid(Board board);
+
     //returns a pointer to all legal boards and will update the state of the board if
     //it is check or checkmate the returned pointer needs to be freed
     std::vector<Board> getAllLegalBoards(Board board);

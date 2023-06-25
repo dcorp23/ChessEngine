@@ -73,6 +73,7 @@ const int whitePawnSquareEval[64] = {
     0, 0, 0, -30, -30, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
 };
+
 const int blackPawnSquareEval[64] = {
     0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, -30, -30, 0, 0, 0,
@@ -85,13 +86,16 @@ const int blackPawnSquareEval[64] = {
 };
 
 const float materialConst = 1;
-const float kingSafetyConst = 1;
-const float activityConst = 1;
-const float pawnConst = 1;
-const float bishopConst = 1;
-const float knightConst = 1;
-const float rookConst = 1;
-const float queenConst = 1;
+const float kingSafetyConst = .7;
+const float activityConst = .7;
+const float pawnConst = .7;
+const float bishopConst = .7;
+const float knightConst = .7;
+const float rookConst = .7;
+const float queenConst = .7;
+
+//passed pawn masks for a square and side
+map passedPawnMasks[64][2];
 
 int determineGamePhase(Board* board);
 
@@ -272,7 +276,7 @@ int queenEval(Board* board, int gamePhase) {
 
 //gets the pseudo legal moves for bishops knights
 //queens and rooks and will count how many moves they have
-float pieceActivity(Board* board) {
+float pieceActivity(Board* board, std::vector<int>* attackVector) {
     float whiteSquares = 0;
     float blackSquares = 0;
 
@@ -288,7 +292,14 @@ float pieceActivity(Board* board) {
         if (i == WRook) MoveGenerator::getRookMoves(tempBoard, &whiteMoveList);
         if (i == WQueen) MoveGenerator::getQueenMoves(tempBoard, &whiteMoveList);
     }
-    whiteSquares += whiteMoveList.size();
+    int numberOfMoves = whiteMoveList.size();
+    for (int i = 0; i < numberOfMoves; i++) {
+        MoveCode move = whiteMoveList.at(i);
+        if (attackVector->at(move.endSquare) >= 0) {
+            Board newBoard = board->move(move);
+            if (MoveGenerator::isBoardValid(newBoard)) whiteSquares++;
+        }
+    }
 
     tempBoard.state.whiteToMove = 0;
     int blackEndPiece = BQueen;
@@ -300,7 +311,14 @@ float pieceActivity(Board* board) {
         if (i == BRook) MoveGenerator::getRookMoves(tempBoard, &blackMoveList);
         if (i == BQueen) MoveGenerator::getQueenMoves(tempBoard, &blackMoveList);
     }
-    blackSquares += blackMoveList.size();
+    numberOfMoves = blackMoveList.size();
+    for (int i = 0; i < numberOfMoves; i++) {
+        MoveCode move = blackMoveList.at(i);
+        if (attackVector->at(move.endSquare) <= 0) {
+            Board newBoard = board->move(move);
+            if (MoveGenerator::isBoardValid(newBoard)) blackSquares++;
+        }
+    }
 
     whiteSquares = (whiteSquares * 15) * (board->state.whiteToMove ? 1.1 : 1); 
     blackSquares = (blackSquares * 15) * (board->state.whiteToMove ? 1 : 1.1); 
@@ -316,11 +334,16 @@ float pawnEval(Board* board, int gamePhase) {
     float whiteScore = 0;
     float blackScore = 0;
 
+    map allPawns = board->bitMaps[WPawn] | board->bitMaps[BPawn];
+
     map whitePawns = board->bitMaps[WPawn];
     int numberOfWhitePawns = getBitCount(whitePawns);
     for (int i = 0; i < numberOfWhitePawns; i++) {
         int square = getLSBIndex(whitePawns);
         whitePawns = popLSB(whitePawns);
+
+        map passedPawnMask = getPassedPawnMaks(square, 1);
+        if (!(passedPawnMask & allPawns)) whiteScore += 75;
 
         whiteScore += whitePawnSquareEval[square];
     }
@@ -330,6 +353,9 @@ float pawnEval(Board* board, int gamePhase) {
     for (int i = 0; i < numberOfblackPawns; i++) {
         int square = getLSBIndex(blackPawns);
         blackPawns = popLSB(blackPawns);
+
+        map passedPawnMask = getPassedPawnMaks(square, 0);
+        if (!(passedPawnMask & allPawns)) blackPawns += 75;
 
         blackScore += blackPawnSquareEval[square];
     }
@@ -351,11 +377,89 @@ int determineGamePhase(Board* board) {
     return 1;
 }
 
+void initPassedPawns() {
+    //get an 2d array getting squares infront of a pawn to check if it is a passed pawn or not
+    //initialize the white pawns
+    //returns a map of all the squares in front of the pawn
+    //and in front of the to columns next to it
+    
+    for (int square = h2; square >= a8; square--) { //counts right to left
+        map passedPawnMask = 0ULL;
+        int nextSquare = square - 8;
+        while (nextSquare >= 0) {
+            passedPawnMask |= (1ULL << nextSquare); //add the square in front of the pawn
+            if ((1ULL << square) & AFILE) passedPawnMask |= (1ULL << (nextSquare - 1)); //check if you can add a bit to the left
+            if ((1ULL << square) & HFILE) passedPawnMask |= (1ULL << (nextSquare + 1)); //check if you can add a bit to the right
+            nextSquare -= 8; //go up one rank
+        }
+        passedPawnMasks[square][1] = passedPawnMask;
+    }
+
+    for (int square = a7; square <= h1; square++) { //counts left to right
+        map passedPawnMask = 0ULL;
+        int nextSquare = square + 8;
+        while (nextSquare <= 63) {
+            passedPawnMask |= (1ULL << nextSquare); //add the square in front of the pawn
+            if ((1ULL << square) & AFILE) passedPawnMask |= (1ULL << (nextSquare - 1)); //check if you can add a bit to the left
+            if ((1ULL << square) & HFILE) passedPawnMask |= (1ULL << (nextSquare + 1)); //check if you can add a bit to the right
+            nextSquare += 8; //go down one rank
+        }
+        passedPawnMasks[square][0] = passedPawnMask;
+    }
+}
+
+map getPassedPawnMaks(int square, int side) {
+    return passedPawnMasks[square][side];
+}
+
+//returns a vector of integers showing how many times a square
+//is attacked if they are attacked by both sides they cancel out to 0
+//so + is white and - is black
+std::vector<int> Evaluation::getVectorOfAttackers(Board* board) {
+    std::vector<int> attackVector(64, 0);
+    
+    //loop through all the pieces
+    for (int piece = WPawn; piece <= BKing; piece++) {
+        map pieceMap = board->bitMaps[piece];
+        while (pieceMap) {
+            int pieceSquare = getLSBIndex(pieceMap);
+            pieceMap = popLSB(pieceMap);
+            
+            map attackMap;
+            if ((piece % 6) == 0) attackMap = AttackTables::getPawnAttacks(pieceSquare, piece ? 0 : 1);
+            if ((piece % 6) == 1) attackMap = AttackTables::getBishopAttacks(pieceSquare, board->All);
+            if ((piece % 6) == 2) attackMap = AttackTables::getKnightAttacks(pieceSquare);
+            if ((piece % 6) == 3) attackMap = AttackTables::getRookAttacks(pieceSquare, board->All);
+            if ((piece % 6) == 4) attackMap = AttackTables::getQueenAttacks(pieceSquare, board->All);
+            if ((piece % 6) == 5) attackMap = AttackTables::getKingAttacks(pieceSquare);
+
+            while (attackMap) {
+                int attackSquare = getLSBIndex(attackMap);
+                attackMap = popLSB(attackMap);
+
+                if (piece < 6) attackVector.at(attackSquare)++;
+                else attackVector.at(attackSquare)--;
+            }
+        }
+    }
+    return attackVector;
+}
+
+void Evaluation::initEvaluation() {
+    initPassedPawns();
+}
+
 float Evaluation::evaluate(Board* board) {
     if (board->state.checkMate == 1) return (board->state.whiteToMove ? -99999 : 99999);
 
     int gamePhase;
     gamePhase = determineGamePhase(board);
+
+
+    printMap(getPassedPawnMaks(a7, 0));
+    return 1;
+
+    std::vector<int> attackVector = getVectorOfAttackers(board);
 
     int opening, middleGame;
     if (gamePhase == 0) {
@@ -367,7 +471,7 @@ float Evaluation::evaluate(Board* board) {
     }
 
     int kingSafetyValue = kingSafety(board, gamePhase);
-    float activityValue = pieceActivity(board);
+    float activityValue = pieceActivity(board, &attackVector);
     int materialValue = material(board);
     int pawnValue = pawnEval(board, gamePhase);
     int bishopValue = bishopEval(board, gamePhase);

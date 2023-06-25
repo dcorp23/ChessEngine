@@ -81,7 +81,7 @@ bool MoveGenerator::isSquareAttacked(int square, int side, Board board, map occu
     return false;
 };
 
-bool isBoardValid(Board board) {
+bool MoveGenerator::isBoardValid(Board board) {
     map king = board.bitMaps[board.state.whiteToMove ? 11 : 5];
     if (king == 0ULL) return true; //if there is no king it is a valid board for tests
     int kingSquare = getLSBIndex(king);
@@ -183,7 +183,7 @@ bool isBoardCheckMate(Board board) {
         for (int j = 0; j < moveCount; j++) {
             if (attackMask & (1ULL << moveList[j].endSquare)) {
                 Board newBoard = board.move(moveList[j]);
-                if (isBoardValid(newBoard)) return false;
+                if (MoveGenerator::isBoardValid(newBoard)) return false;
             }
         }
     }

@@ -10,7 +10,7 @@
 #include <thread>
 #define INFINITY 99999999
 #define NUM_THREADS 4
-#define MAX_DEPTH 5
+#define MAX_DEPTH 3
 
 static std::mutex evalMutex;
 std::vector<std::future<void>> futures;
@@ -54,10 +54,14 @@ void threadMinMax(Board* board, int currentIndex, int* bestIndex, float* bestEva
 
 int main(void) {
     AttackTables::initAttackTables();
+    Evaluation::initEvaluation();
     int playerSide;
     std::cout << "Pick a side: white = 1, black = 0\n";
     std::cin >> playerSide;
     Board board = Board(startingFEN);
+
+    Evaluation::evaluate(&board);
+    return 0;
 
     while (!board.state.checkMate) {
         std::cout << (board.state.whiteToMove ? "\nWhite to move\n" : "\nBlack to move\n");
