@@ -13,6 +13,8 @@ BoardState::BoardState() {
     enPassant = 0;
     check = 0;
     checkMate = 0;
+    halfMove = 0;
+    fullMove = 0;
 };
 
 //piece 0-5 pawn bishop knight rook queen king
@@ -78,6 +80,7 @@ Board::Board(std::string fenString) {
         }
         fenPart = fenPart + fenString.at(stringIndex);
     }
+    fenParts.push_back(fenPart);
 
     int square = 0;
     currentString = fenParts[0];
@@ -167,6 +170,15 @@ Board::Board(std::string fenString) {
 
         newState.enPassant = ((8 - row) * 8) + column;
     }
+
+    
+    currentString = fenParts[4];
+    std::cout << currentString << '\n';
+    newState.halfMove = std::stoi(currentString);
+
+    currentString = fenParts[5];
+    std::cout << currentString << '\n';
+    newState.fullMove = std::stoi(currentString);
 
     White = 0ULL;
     Black = 0ULL;
@@ -271,6 +283,14 @@ Board Board::move(MoveCode code) {
     BoardState newState = state;
     newState.enPassant = code.enPassantSquare;
     newState.whiteToMove = !newState.whiteToMove;
+    newState.halfMove++;
+    newState.fullMove = (newState.halfMove/2) + 1;
+
+    if (code.piece == 0 || code.capture) {
+        newState.halfMove = 0;
+        newState.fullMove = 1;
+    }
+
     if (state.whiteToMove) {
         if (code.piece == 5) {
             newState.whiteLongCastle = 0;

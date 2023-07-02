@@ -3,54 +3,11 @@
 #include "chessBoard.hpp"
 #include "attackTables.hpp"
 #include "moveGen.hpp"
-#include <chrono>
+#include "search.hpp"
 #include <mutex>
 #include <future>
-#include <queue>
-#include <thread>
-#define INFINITY 99999999
-#define NUM_THREADS 4
-#define MAX_DEPTH 3
 
-static std::mutex evalMutex;
 std::vector<std::future<void>> futures;
-
-float minimax(Board* board, int depth, bool isMaximizingPlayer, float alpha, float beta) {
-    if (depth == 0 || board->state.checkMate == 1) return Evaluation::evaluate(board);
-    
-    std::vector<Board> boards = MoveGenerator::getAllLegalBoards(*board);
-    int boardsSize = boards.size();
-
-    if (isMaximizingPlayer)  {
-        float bestVal = -INFINITY;
-        for (int i = 0; i < boardsSize; i++)  {
-            float value = minimax(&boards.at(i), depth - 1, false, alpha, beta);
-            bestVal = std::max( bestVal, value);
-            alpha = std::max( alpha, value);
-            if (beta <= alpha) break;
-        }
-        return bestVal;
-    }
-    else {
-        float bestVal = INFINITY;
-        for (int i = 0; i < boardsSize; i++) {
-            float value = minimax(&boards.at(i), depth - 1, true, alpha, beta);
-            bestVal = std::min( bestVal, value);
-            beta = std::min( beta, value);
-            if (beta <= alpha) break;
-        }
-        return bestVal;
-    }
-}
-
-void threadMinMax(Board* board, int currentIndex, int* bestIndex, float* bestEval, int depth, float* alpha, float* beta) {
-    float eval = minimax(board, depth, board->state.whiteToMove ? true : false, *alpha, *beta);
-    std::lock_guard<std::mutex> lock(evalMutex);
-    if (board->state.whiteToMove ? eval < *bestEval : eval > *bestEval) {
-        *bestIndex = currentIndex;
-        *bestEval = eval;
-    }
-}
 
 int main(void) {
     AttackTables::initAttackTables();
@@ -60,13 +17,11 @@ int main(void) {
     std::cin >> playerSide;
     Board board = Board(startingFEN);
 
-    Evaluation::evaluate(&board);
-    return 0;
-
     while (!board.state.checkMate) {
         std::cout << (board.state.whiteToMove ? "\nWhite to move\n" : "\nBlack to move\n");
         board.printBoard();
         std::vector<Board> boards = MoveGenerator::getAllLegalBoards(board);
+        if (boards.size() == 0) break;
         if (board.state.whiteToMove == playerSide) {
             int piece;
             std::cout << "\nWhat piece do you want to move?\n";
@@ -125,7 +80,7 @@ int main(void) {
             int boardsSize = boards.size();
             for (int i = 0; i < boardsSize; i++) {
                 if (futures.size() < NUM_THREADS) {
-                    futures.push_back(std::async(std::launch::async, threadMinMax, &boards.at(i), i, &bestIndex, &bestEval, MAX_DEPTH, &alpha, &beta));
+                    futures.push_back(std::async(std::launch::async, Search::threadMinMax, &boards.at(i), i, &bestIndex, &bestEval, MAX_DEPTH, &alpha, &beta));
                 }
                 else {
                     //waits while the max number of threads are active
@@ -163,6 +118,7 @@ int main(void) {
         }
     }
 
+    std::cout << "\nGame Over: \n";
     board.printBoard();
     return 0;
 }

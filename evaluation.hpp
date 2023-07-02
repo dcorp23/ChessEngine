@@ -1,8 +1,21 @@
 #include "chessBoard.hpp"
 
+struct EvaluationWeights {
+    float material;
+    float kingSafety;
+    float activity;
+    float pawn;
+    float bishop;
+    float knight;
+    float rook;
+    float queen;
+
+    EvaluationWeights();
+};
+
 namespace Evaluation {
     //returns full evaluation of a board for the person moving
-    float evaluate(Board* board);
+    float evaluate(Board* board, EvaluationWeights weights);
 
     void initEvaluation();
 

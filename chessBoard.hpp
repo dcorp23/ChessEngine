@@ -28,6 +28,8 @@ struct BoardState {
                                 //0 is no enpassant because you can't enpassant on a8 anyway
     unsigned short check : 1;
     unsigned short checkMate: 1;
+    unsigned char halfMove;
+    unsigned char fullMove;
 
     BoardState();
 };

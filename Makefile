@@ -4,8 +4,8 @@ all: tests main
 
 tests: moveGenTest
 
-main: main.o moveGen.o attackTables.o chessBoard.o bitFunctions.o evaluation.o
-	g++ $(CPPFLAGS) main.o bitFunctions.o moveGen.o attackTables.o chessBoard.o evaluation.o -o main
+main: main.o moveGen.o attackTables.o chessBoard.o bitFunctions.o evaluation.o search.o
+	g++ $(CPPFLAGS) main.o bitFunctions.o moveGen.o attackTables.o chessBoard.o evaluation.o search.o -o main
 
 moveGenTest: moveGenTest.o moveGen.o attackTables.o chessBoard.o bitFunctions.o
 	g++ $(CPPFLAGS) moveGenTest.o bitFunctions.o moveGen.o attackTables.o chessBoard.o -o moveGenTest
@@ -18,6 +18,9 @@ evaluation.o: evaluation.cpp evaluation.hpp
 
 chessBoard.o: chessBoard.cpp chessBoard.hpp
 	g++ $(CPPFLAGS) -c chessBoard.cpp -o chessBoard.o
+
+search.o: search.cpp search.hpp
+	g++ $(CPPFLAGS) -c search.cpp -o search.o
 
 attackTables.o: attackTables.cpp attackTables.hpp
 	g++ $(CPPFLAGS) -c attackTables.cpp -o attackTables.o

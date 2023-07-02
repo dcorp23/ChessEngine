@@ -583,6 +583,7 @@ std::vector<Board> MoveGenerator::getAllLegalBoards(Board board) {
     moveList.reserve(256);
     calculateAllMoves(board, &moveList);
     std::vector<Board> validBoards;
+    if (board.state.halfMove >= 100) return validBoards;
     validBoards.reserve(218);
     validateAllMoves(board, &moveList, &validBoards);
     int vectorSize = validBoards.size();

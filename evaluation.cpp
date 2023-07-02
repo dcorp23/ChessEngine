@@ -70,13 +70,13 @@ const int whitePawnSquareEval[64] = {
     10, 10, 20, 50, 50, 20, 10, 10,
     0, 0, 10, 50, 50, -10, 0, 0,
     0, 0, 0, 30, 30, -20, 0, 0,
-    0, 0, 0, -30, -30, 0, 0, 0,
+    0, 0, 0, -10, -10, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
 };
 
 const int blackPawnSquareEval[64] = {
     0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, -30, -30, 0, 0, 0,
+    0, 0, 0, -10, -10, 0, 0, 0,
     0, 0, 0, 30, 30, -20, 0, 0,
     0, 0, 10, 50, 50, -10, 0, 0,
     10, 10, 20, 50, 50, 20, 10, 10,
@@ -84,15 +84,6 @@ const int blackPawnSquareEval[64] = {
     75, 75, 75, 75, 75, 75, 75, 75,
     0, 0, 0, 0, 0, 0, 0, 0,
 };
-
-const float materialConst = 1;
-const float kingSafetyConst = .7;
-const float activityConst = .7;
-const float pawnConst = .7;
-const float bishopConst = .7;
-const float knightConst = .7;
-const float rookConst = .7;
-const float queenConst = .7;
 
 //passed pawn masks for a square and side
 map passedPawnMasks[64][2];
@@ -326,6 +317,10 @@ float pieceActivity(Board* board, std::vector<int>* attackVector) {
     return whiteSquares - blackSquares;
 }
 
+map getPassedPawnMaks(int square, int side) {
+    return passedPawnMasks[square][side];
+}
+
 //counts then number of pawns in the center for that side
 float pawnEval(Board* board, int gamePhase) {
     //use constant evaluation of predetermined squares
@@ -408,10 +403,6 @@ void initPassedPawns() {
     }
 }
 
-map getPassedPawnMaks(int square, int side) {
-    return passedPawnMasks[square][side];
-}
-
 //returns a vector of integers showing how many times a square
 //is attacked if they are attacked by both sides they cancel out to 0
 //so + is white and - is black
@@ -449,15 +440,22 @@ void Evaluation::initEvaluation() {
     initPassedPawns();
 }
 
-float Evaluation::evaluate(Board* board) {
+EvaluationWeights::EvaluationWeights() {
+    material = 1;
+    kingSafety = 1;
+    activity = 1;
+    pawn = 1;
+    bishop = 1;
+    knight = 1;
+    rook = 1;
+    queen = 1;
+}
+
+float Evaluation::evaluate(Board* board, EvaluationWeights weights) {
     if (board->state.checkMate == 1) return (board->state.whiteToMove ? -99999 : 99999);
 
     int gamePhase;
     gamePhase = determineGamePhase(board);
-
-
-    printMap(getPassedPawnMaks(a7, 0));
-    return 1;
 
     std::vector<int> attackVector = getVectorOfAttackers(board);
 
@@ -479,6 +477,6 @@ float Evaluation::evaluate(Board* board) {
     int rookValue = rookEval(board, gamePhase);
     int queenValue = queenEval(board, gamePhase);
     
-    return ((materialConst * materialValue) + (kingSafetyConst * kingSafetyValue) + (activityConst * activityValue) + (pawnConst * pawnValue) + 
-            (bishopConst * bishopValue) + (knightConst * knightValue) + (rookConst * rookValue) + (queenConst * queenValue));
+    return ((weights.material * materialValue) + (weights.kingSafety * kingSafetyValue) + (weights.activity * activityValue) + (weights.pawn * pawnValue) + 
+            (weights.bishop * bishopValue) + (weights.knight * knightValue) + (weights.rook * rookValue) + (weights.queen * queenValue));
 }
