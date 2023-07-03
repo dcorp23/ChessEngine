@@ -451,6 +451,17 @@ EvaluationWeights::EvaluationWeights() {
     queen = 1;
 }
 
+EvaluationWeights::printWeights() {
+    std::cout << "material = " << this->material << ";\n";
+    std::cout << "kingSafety = " << this->kingSafety << ";\n";
+    std::cout << "activity = " << this->activity << ";\n";
+    std::cout << "pawn = " << this->pawn << ";\n";
+    std::cout << "bishop = " << this->bishop << ";\n";
+    std::cout << "knight = " << this->knight << ";\n";
+    std::cout << "rook = " << this->rook << ";\n";
+    std::cout << "queen = " << this->queen << ";\n";
+}
+
 float Evaluation::evaluate(Board* board, EvaluationWeights weights) {
     if (board->state.checkMate == 1) return (board->state.whiteToMove ? -99999 : 99999);
 

@@ -9,6 +9,8 @@
 
 std::vector<std::future<void>> futures;
 
+EvaluationWeights weights = EvaluationWeights();
+
 int main(void) {
     AttackTables::initAttackTables();
     Evaluation::initEvaluation();
@@ -80,7 +82,7 @@ int main(void) {
             int boardsSize = boards.size();
             for (int i = 0; i < boardsSize; i++) {
                 if (futures.size() < NUM_THREADS) {
-                    futures.push_back(std::async(std::launch::async, Search::threadMinMax, &boards.at(i), i, &bestIndex, &bestEval, MAX_DEPTH, &alpha, &beta));
+                    futures.push_back(std::async(std::launch::async, Search::threadMinMax, &boards.at(i), i, &bestIndex, &bestEval, MAX_DEPTH, &alpha, &beta, weights));
                 }
                 else {
                     //waits while the max number of threads are active

@@ -1,17 +1,23 @@
 CPPFLAGS = -Wfatal-errors --std=c++17 -pedantic -Ofast
 
-all: tests main
+all: tests main evalTuning
 
 tests: moveGenTest
 
 main: main.o moveGen.o attackTables.o chessBoard.o bitFunctions.o evaluation.o search.o
 	g++ $(CPPFLAGS) main.o bitFunctions.o moveGen.o attackTables.o chessBoard.o evaluation.o search.o -o main
 
+evalTuning: evaluationTuning.o moveGen.o attackTables.o chessBoard.o bitFunctions.o evaluation.o search.o
+	g++ $(CPPFLAGS) evaluationTuning.o bitFunctions.o moveGen.o attackTables.o chessBoard.o evaluation.o search.o -o evalTuning
+
 moveGenTest: moveGenTest.o moveGen.o attackTables.o chessBoard.o bitFunctions.o
 	g++ $(CPPFLAGS) moveGenTest.o bitFunctions.o moveGen.o attackTables.o chessBoard.o -o moveGenTest
 
 main.o: main.cpp
 	g++ $(CPPFLAGS) -c main.cpp -o main.o
+
+evaluationTuning.o: evaluationTuning.cpp
+	g++ $(CPPFLAGS) -c evaluationTuning.cpp -o evaluationTuning.o
 
 evaluation.o: evaluation.cpp evaluation.hpp
 	g++ $(CPPFLAGS) -c evaluation.cpp -o evaluation.o

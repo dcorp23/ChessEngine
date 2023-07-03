@@ -1,3 +1,4 @@
+#pragma once
 #include "chessBoard.hpp"
 
 struct EvaluationWeights {
@@ -11,6 +12,8 @@ struct EvaluationWeights {
     float queen;
 
     EvaluationWeights();
+
+    printWeights();
 };
 
 namespace Evaluation {

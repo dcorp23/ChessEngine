@@ -173,11 +173,9 @@ Board::Board(std::string fenString) {
 
     
     currentString = fenParts[4];
-    std::cout << currentString << '\n';
     newState.halfMove = std::stoi(currentString);
 
     currentString = fenParts[5];
-    std::cout << currentString << '\n';
     newState.fullMove = std::stoi(currentString);
 
     White = 0ULL;
@@ -284,11 +282,10 @@ Board Board::move(MoveCode code) {
     newState.enPassant = code.enPassantSquare;
     newState.whiteToMove = !newState.whiteToMove;
     newState.halfMove++;
-    newState.fullMove = (newState.halfMove/2) + 1;
+    if (!state.whiteToMove) newState.fullMove++;
 
     if (code.piece == 0 || code.capture) {
         newState.halfMove = 0;
-        newState.fullMove = 1;
     }
 
     if (state.whiteToMove) {
