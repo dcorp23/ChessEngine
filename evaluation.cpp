@@ -233,9 +233,9 @@ float rookEval(Board* board, int gamePhase) {
         int col = square % 8;
         int row = square / 8;
         if (!(FILES[col] & allPawns)) whiteScore += 75; //open file
-        if (row == 7) whiteScore += 75; //7th rank
-        if (col == 4 || col == 5) whiteScore += 25; //center the rooks
-        if (col == 3 || col == 6) whiteScore += 25; //center the rooks
+        if (row == 1) whiteScore += 75; //7th rank
+        if (col == 3 || col == 4) whiteScore += 25; //center the rooks
+        if (col == 2 || col == 5) whiteScore += 25; //center the rooks
     }
 
     map blackRooks = board->bitMaps[BRook];
@@ -247,9 +247,9 @@ float rookEval(Board* board, int gamePhase) {
         int col = square % 8;
         int row = square / 8;
         if (!(FILES[col] & allPawns)) blackScore += 75; //open file
-        if (row == 2) blackScore += 75; //2nd rank
-        if (col == 4 || col == 5) blackScore += 35; //center the rooks
-        if (col == 3 || col == 6) blackScore += 25; //center the rooks
+        if (row == 6) blackScore += 75; //2nd rank
+        if (col == 3 || col == 4) blackScore += 35; //center the rooks
+        if (col == 2 || col == 5) blackScore += 25; //center the rooks
     }
 
     return whiteScore - blackScore;
@@ -442,16 +442,16 @@ void Evaluation::initEvaluation() {
 
 EvaluationWeights::EvaluationWeights() {
     material = 1;
-    kingSafety = 1;
-    activity = 1;
-    pawn = 1;
-    bishop = 1;
-    knight = 1;
-    rook = 1;
+    kingSafety = 0.5;
+    activity = .1;
+    pawn = 0.7;
+    bishop = 0.5;
+    knight = 0.9;
+    rook = 0.1;
     queen = 1;
 }
 
-EvaluationWeights::printWeights() {
+void EvaluationWeights::printWeights() {
     std::cout << "material = " << this->material << ";\n";
     std::cout << "kingSafety = " << this->kingSafety << ";\n";
     std::cout << "activity = " << this->activity << ";\n";

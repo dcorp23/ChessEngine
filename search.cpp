@@ -34,8 +34,8 @@ float Search::minimax(Board* board, int depth, bool isMaximizingPlayer, float al
     }
 }
 
-void Search::threadMinMax(Board* board, int currentIndex, int* bestIndex, float* bestEval, int depth, float* alpha, float* beta, EvaluationWeights weights) {
-    float eval = minimax(board, depth, board->state.whiteToMove ? true : false, *alpha, *beta, weights);
+void Search::threadMinMax(Board* board, int currentIndex, int* bestIndex, float* bestEval, int depth, float alpha, float beta, EvaluationWeights weights) {
+    float eval = minimax(board, depth, board->state.whiteToMove ? true : false, alpha, beta, weights);
     std::lock_guard<std::mutex> lock(evalMutex);
     if (board->state.whiteToMove ? eval < *bestEval : eval > *bestEval) {
         *bestIndex = currentIndex;

@@ -13,7 +13,7 @@ struct EvaluationWeights {
 
     EvaluationWeights();
 
-    printWeights();
+    void printWeights();
 };
 
 namespace Evaluation {
