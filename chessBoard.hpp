@@ -8,6 +8,12 @@ enum {
     BPawn, BBishop, BKnight, BRook, BQueen, BKing
 };
 
+//check starting rook squares for castling rights
+const map whiteShortRookStart = 1ULL << h1;
+const map whiteLongRookStart = 1ULL << a1;
+const map blackShortRookStart = 1ULL << h8;
+const map blackLongRookStart = 1ULL << a8;
+
 //Fen string that creates the starting position
 const std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 

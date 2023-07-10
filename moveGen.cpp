@@ -518,7 +518,7 @@ void MoveGenerator::getKingMoves(Board board, std::vector<MoveCode>* moveList) {
 
     if (castlingRights) {
         bool square1, square2;
-        if (board.state.whiteShortCastle || board.state.blackShortCastle) {
+        if (board.state.whiteToMove ? board.state.whiteShortCastle : board.state.blackShortCastle) {
             map piecesInBetweenMask = 0b11ULL;
             piecesInBetweenMask <<= board.state.whiteToMove ? f1 : f8;
             if (!(piecesInBetweenMask & board.All)) {
@@ -537,7 +537,7 @@ void MoveGenerator::getKingMoves(Board board, std::vector<MoveCode>* moveList) {
                 }
             }
         }
-        if (board.state.whiteLongCastle || board.state.blackLongCastle) {
+        if (board.state.whiteToMove ? board.state.whiteLongCastle : board.state.blackLongCastle) {
             map piecesInBetweenMask = 0b111ULL;
             piecesInBetweenMask <<= board.state.whiteToMove ? b1 : b8;
             if (!(piecesInBetweenMask & board.All)) {

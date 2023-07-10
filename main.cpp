@@ -1,4 +1,6 @@
 #include "game.hpp"
+#include "chessBoard.hpp"
+#include "bitFunctions.hpp"
 #include <mutex>
 #include <future>
 #include <queue>

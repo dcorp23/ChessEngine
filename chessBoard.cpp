@@ -284,33 +284,40 @@ Board Board::move(MoveCode code) {
     newState.halfMove++;
     if (!state.whiteToMove) newState.fullMove++;
 
+    //reset the 50 move rule
     if (code.piece == 0 || code.capture) {
         newState.halfMove = 0;
     }
 
+    //check for castling rights on the next move
     if (state.whiteToMove) {
         if (code.piece == 5) {
             newState.whiteLongCastle = 0;
             newState.whiteShortCastle = 0;
         } 
-        if (state.whiteLongCastle) {
-            if (code.piece == 3 && code.startSquare == a1) newState.whiteLongCastle = 0;
-        }
-        if (state.whiteShortCastle) {
-            if (code.piece == 3 && code.startSquare == h1) newState.whiteShortCastle = 0;
-        }
     } else {
         if (code.piece == 5) {
             newState.blackLongCastle = 0;
             newState.blackShortCastle = 0;
         }
-        if (state.blackLongCastle) {
-            if (code.piece == 3 && code.startSquare == a8) newState.blackLongCastle = 0;
-        }
-        if (state.blackShortCastle) {
-            if (code.piece == 3 && code.startSquare == h8) newState.blackShortCastle = 0;
+    }
+    //check if white rooks are captured or moved if they still have castling rights
+    if (state.whiteShortCastle) {
+        if (!(bitMaps[WRook] & whiteShortRookStart)) {
+            newState.whiteShortCastle = 0;
         }
     }
+    if (state.whiteLongCastle) {
+        if (!(bitMaps[WRook] & whiteLongRookStart)) newState.whiteLongCastle = 0;
+    }
+    //check if black rooks are captured or moved if they still have castling rights
+    if (state.blackShortCastle) {
+        if (!(bitMaps[BRook] & blackShortRookStart)) newState.blackShortCastle = 0;
+    }
+    if (state.blackLongCastle) {
+        if (!(bitMaps[BRook] & blackLongRookStart)) newState.blackLongCastle = 0;
+    }
+
 
     if (code.promotion) {
         pieceMap ^= (1ULL << code.endSquare);

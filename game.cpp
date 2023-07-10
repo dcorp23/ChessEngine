@@ -28,7 +28,7 @@ void Game::init() {
     Evaluation::initEvaluation();
     std::cout << "Pick a side: white = 1, black = 0: ";
     std::cin >> playerSide;
-    board = Board(startingFEN);
+    board = Board("rnbqkbnr/ppppppp1/8/6N1/8/8/PPPPPPpP/RNBQKB1R b KQkq - 1 5");
 
     if (board.state.whiteToMove == playerSide) engineTurn = false;
     else {engineTurn = true;}
