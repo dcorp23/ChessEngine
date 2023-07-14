@@ -42,7 +42,7 @@ bool testForCorrectBoards(std::vector<Board> actual, std::vector<Board> expected
     for (int i = 0; i < sampleSize; i++) {
         bool equal = false;
         for (int j = 0; j < actualSize; j++) {
-            if (expected.at(i).isEqual(actual.at(j))) {
+            if (expected.at(i) == actual.at(j)) {
                 equal = true;
                 break;
             }

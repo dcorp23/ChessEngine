@@ -91,5 +91,7 @@ struct Board {
     void printBoard();
 
     //tests if all the bitmaps are the same doesn't check the state
-    bool isEqual(Board board);
+    bool operator==(const Board otherBoard) const;
+
+    bool operator!=(const Board otherBoard) const;
 };

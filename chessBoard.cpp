@@ -419,14 +419,17 @@ void Board::printBoard() {
     }
 };
 
-//tests if all the bitmaps are the same doesn't check the state
-bool Board::isEqual(Board board) {
-    if (this->White != board.White) return false;
-    if (this->Black != board.Black) return false;
-    if (this->All != board.All) return false;
+bool Board::operator==(const Board otherBoard) const {
+    if (this->White != otherBoard.White) return false;
+    if (this->Black != otherBoard.Black) return false;
+    if (this->All != otherBoard.All) return false;
     for (int i = WPawn; i <= BKing; i++) {
-        if (this->bitMaps[i] != board.bitMaps[i]) return false;
+        if (this->bitMaps[i] != otherBoard.bitMaps[i]) return false;
     }
-    if (this->state.whiteToMove != board.state.whiteToMove) return false;
+    if (this->state.whiteToMove != otherBoard.state.whiteToMove) return false;
     return true;
+};
+
+bool Board::operator!=(const Board otherBoard) const {
+    return !(*this == otherBoard);
 };

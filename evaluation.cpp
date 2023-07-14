@@ -88,6 +88,10 @@ const int blackPawnSquareEval[64] = {
 //passed pawn masks for a square and side
 map passedPawnMasks[64][2];
 
+//isolated pawn masks for each square
+//side doesn't matter
+map isolatedPawnsMasks[64];
+
 int determineGamePhase(Board* board);
 
 //evaluates the material of the position returning a negative score for black
@@ -311,14 +315,22 @@ float pieceActivity(Board* board, std::vector<int>* attackVector) {
         }
     }
 
-    whiteSquares = (whiteSquares * 15) * (board->state.whiteToMove ? 1.1 : 1); 
-    blackSquares = (blackSquares * 15) * (board->state.whiteToMove ? 1 : 1.1); 
+    whiteSquares = (whiteSquares * 20) * (board->state.whiteToMove ? 1.1 : 1); 
+    blackSquares = (blackSquares * 20) * (board->state.whiteToMove ? 1 : 1.1); 
 
     return whiteSquares - blackSquares;
 }
 
 map getPassedPawnMaks(int square, int side) {
     return passedPawnMasks[square][side];
+}
+
+map getIsolatedPawnMaks(int square) {
+    return isolatedPawnsMasks[square];
+}
+
+void outposts() {
+
 }
 
 //counts then number of pawns in the center for that side
@@ -337,8 +349,17 @@ float pawnEval(Board* board, int gamePhase) {
         int square = getLSBIndex(whitePawns);
         whitePawns = popLSB(whitePawns);
 
+        //passed pawns
         map passedPawnMask = getPassedPawnMaks(square, 1);
         if (!(passedPawnMask & allPawns)) whiteScore += 75;
+
+        //isolated pawns
+        map isolatedPawnsMasks = getIsolatedPawnMaks(square);
+        if (!(isolatedPawnsMasks & board->bitMaps[WPawn])) whiteScore -= 30;
+
+        //stacked pawns
+        int col = square % 8;
+        if (getBitCount(FILES[col] & board->bitMaps[WPawn]) > 1) whiteScore -= 30;
 
         whiteScore += whitePawnSquareEval[square];
     }
@@ -349,8 +370,17 @@ float pawnEval(Board* board, int gamePhase) {
         int square = getLSBIndex(blackPawns);
         blackPawns = popLSB(blackPawns);
 
+        //passed pawns
         map passedPawnMask = getPassedPawnMaks(square, 0);
         if (!(passedPawnMask & allPawns)) blackPawns += 75;
+
+        //isolated pawns
+        map isolatedPawnsMasks = getIsolatedPawnMaks(square);
+        if (!(isolatedPawnsMasks & board->bitMaps[BPawn])) whiteScore -= 30;
+
+        //stacked pawns
+        int col = square % 8;
+        if (getBitCount(FILES[col] & board->bitMaps[BPawn]) > 1) blackScore -= 15;
 
         blackScore += blackPawnSquareEval[square];
     }
@@ -403,6 +433,18 @@ void initPassedPawns() {
     }
 }
 
+void initIsolatedPawns() {
+    for (int square = a8; square <= h1; square++) {
+        map isolatedPawnMask = 0ULL;
+
+        int col = square % 8;
+        if (col != 7) isolatedPawnMask |= FILES[col + 1]; //right file
+        if (col != 0) isolatedPawnMask |= FILES[col - 1]; //left file
+
+        isolatedPawnsMasks[square] = isolatedPawnMask;
+    }
+}
+
 //returns a vector of integers showing how many times a square
 //is attacked if they are attacked by both sides they cancel out to 0
 //so + is white and - is black
@@ -438,6 +480,7 @@ std::vector<int> Evaluation::getVectorOfAttackers(Board* board) {
 
 void Evaluation::initEvaluation() {
     initPassedPawns();
+    initIsolatedPawns();
 }
 
 EvaluationWeights::EvaluationWeights() {

@@ -28,7 +28,7 @@ void Game::init() {
     Evaluation::initEvaluation();
     std::cout << "Pick a side: white = 1, black = 0: ";
     std::cin >> playerSide;
-    board = Board("rnbqkbnr/ppppppp1/8/6N1/8/8/PPPPPPpP/RNBQKB1R b KQkq - 1 5");
+    board = Board(startingFEN);
 
     if (board.state.whiteToMove == playerSide) engineTurn = false;
     else {engineTurn = true;}
@@ -151,32 +151,14 @@ void Game::engineMove() {
         }
         else {
             //waits while the max number of threads are active
-            int j = 0;
-            while (true) {
-                //checks if a thread has finnished then if it has then break out and start a new thread
-                if (futures.at(j).wait_for(std::chrono::milliseconds(500)) == std::future_status::ready) {
-                    futures.erase(futures.begin() + j);
-                    break;
-                }
-                j++;
-                if (j == futures.size()) j = 0;
-            }
+            Search::waitForThreads(1, &futures);
             i--;
         }
     }
 
     //wait for threads to finish
     //while threads are still active
-    int size = futures.size();
-    while (size != 0) {
-        for (int i = 0; i < futures.size(); i++) { //loop through threads
-            //if a thread is done remove it
-            if (futures.at(i).wait_for(std::chrono::milliseconds(500)) == std::future_status::ready) {
-                futures.erase(futures.begin() + i);
-                size--;
-            }
-        }
-    }
+    Search::waitForThreads(NUM_THREADS, &futures);
     
     //get the best best board
     nextBoard = possibleNextBoards.at(bestIndex);
@@ -237,7 +219,7 @@ void Game::update() {
                     }
                     int possibleBoardsSize = possibleNextBoards.size();
                     for (int i = 0; i < possibleBoardsSize; i++) {
-                        if (newBoard.isEqual(possibleNextBoards.at(i))) {
+                        if (newBoard == possibleNextBoards.at(i)) {
                             boardHistory.push(possibleNextBoards.at(i));
                             board = possibleNextBoards.at(i);
                             possibleNextBoards = MoveGenerator::getAllLegalBoards(board);
@@ -245,7 +227,7 @@ void Game::update() {
                             break;
                         }
                     }
-                    if (board.isEqual(newBoard)) {
+                    if (board == newBoard) {
                         selectedPieceSquare = -1;
                         promotion = false;
                         promotionSquare = -1;
@@ -266,7 +248,7 @@ void Game::update() {
                     }
                     int possibleBoardsSize = possibleNextBoards.size();
                     for (int i = 0; i < possibleBoardsSize; i++) {
-                        if (newBoard.isEqual(possibleNextBoards.at(i))) {
+                        if (newBoard == possibleNextBoards.at(i)) {
                             boardHistory.push(possibleNextBoards.at(i));
                             board = possibleNextBoards.at(i);
                             possibleNextBoards = MoveGenerator::getAllLegalBoards(board);
@@ -274,7 +256,7 @@ void Game::update() {
                             break;
                         }
                     }
-                    if (board.isEqual(newBoard)) {
+                    if (board == newBoard) {
                         selectedPieceSquare = -1;
                         filteredMoveList.clear();
                     }

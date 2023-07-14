@@ -191,7 +191,7 @@ bool isBoardCheckMate(Board board) {
 };
 
 void MoveGenerator::getPawnMoves(Board board, std::vector<MoveCode>* moveList) {
-    map pawns;
+    //map pawns;
     map moves = 0ULL;
 
     map beforeMove;
@@ -342,12 +342,8 @@ void MoveGenerator::getBishopMoves(Board board, std::vector<MoveCode>* moveList)
             int endSquare = getLSBIndex(attackMask);
             attackMask = popLSB(attackMask);
 
-            if (enemyPieces & (1ULL << endSquare)) { //check for captures
-                move = createMove(startSquare, endSquare, 1, 1);
-                moveList->push_back(move);
-                continue;
-            }
-            move = createMove(startSquare, endSquare, 1, 0); //quite moves
+            int capture = (enemyPieces & (1ULL << endSquare)) >> endSquare;
+            move = createMove(startSquare, endSquare, 1, capture); //quite moves
             moveList->push_back(move);
         }
     }
@@ -382,13 +378,8 @@ void MoveGenerator::getKnightMoves(Board board, std::vector<MoveCode>* moveList)
             int endSquare = getLSBIndex(attackMask);
             attackMask = popLSB(attackMask);
 
-            //if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
-            if (enemyPieces & (1ULL << endSquare)) { //check for captures
-                move = createMove(startSquare, endSquare, 2, 1);
-                moveList->push_back(move);
-                continue;
-            }
-            move = createMove(startSquare, endSquare, 2, 0); //quite moves
+            int capture = (enemyPieces & (1ULL << endSquare)) >> endSquare;
+            move = createMove(startSquare, endSquare, 2, capture); //quite moves
             moveList->push_back(move);
         }
     }
@@ -423,13 +414,8 @@ void MoveGenerator::getRookMoves(Board board, std::vector<MoveCode>* moveList) {
             int endSquare = getLSBIndex(attackMask);
             attackMask = popLSB(attackMask);
 
-            //if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
-            if (enemyPieces & (1ULL << endSquare)) { //check for captures
-                move = createMove(startSquare, endSquare, 3, 1);
-                moveList->push_back(move);
-                continue;
-            }
-            move = createMove(startSquare, endSquare, 3, 0); //quite moves
+            int capture = (enemyPieces & (1ULL << endSquare)) >> endSquare;
+            move = createMove(startSquare, endSquare, 3, capture); //quite moves
             moveList->push_back(move);
         }
     }
@@ -464,13 +450,8 @@ void MoveGenerator::getQueenMoves(Board board, std::vector<MoveCode>* moveList) 
             int endSquare = getLSBIndex(attackMask);
             attackMask = popLSB(attackMask);
 
-            //if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
-            if (enemyPieces & (1ULL << endSquare)) { //check for captures
-                move = createMove(startSquare, endSquare, 4, 1);
-                moveList->push_back(move);
-                continue;
-            }
-            move = createMove(startSquare, endSquare, 4, 0); //quite moves
+            int capture = (enemyPieces & (1ULL << endSquare)) >> endSquare;
+            move = createMove(startSquare, endSquare, 4, capture); //quite moves
             moveList->push_back(move);
         }
     }
@@ -501,13 +482,8 @@ void MoveGenerator::getKingMoves(Board board, std::vector<MoveCode>* moveList) {
         int endSquare = getLSBIndex(attackMask);
         attackMask = popLSB(attackMask);
 
-        //if (teamPieces & (1ULL << endSquare)) continue; //skip spaces blocked by team
-        if (enemyPieces & (1ULL << endSquare)) { //check for captures
-            move = createMove(startSquare, endSquare, 5, 1);
-            moveList->push_back(move);
-            continue;
-        }
-        move = createMove(startSquare, endSquare, 5, 0); //quite moves
+        int capture = (enemyPieces & (1ULL << endSquare)) >> endSquare;
+        move = createMove(startSquare, endSquare, 5, capture); //quite moves
         moveList->push_back(move);
     }
 

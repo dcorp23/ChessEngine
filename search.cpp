@@ -6,6 +6,20 @@
 
 static std::mutex evalMutex;
 
+//wait until there are openThreads available in a vector of active threads
+void Search::waitForThreads(int openThreads, std::vector<std::future<void>>* threads) {
+    int j = 0;
+    if (threads->empty()) return;
+    while ((NUM_THREADS - threads->size()) < openThreads ) {
+        //std::cout << (NUM_THREADS - threads->size()) << " waiting for " << openThreads << " " << j << '\n';
+        if (threads->at(j).wait_for(std::chrono::milliseconds(500)) == std::future_status::ready) {
+            threads->erase(threads->begin() + j);
+        }
+        j++;
+        if (j >= threads->size()) j = 0;
+    }
+};
+
 float Search::minimax(Board* board, int depth, bool isMaximizingPlayer, float alpha, float beta, EvaluationWeights weights) {
     if (depth == 0 || board->state.checkMate == 1) return Evaluation::evaluate(board, weights);
     
