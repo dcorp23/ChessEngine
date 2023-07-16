@@ -28,6 +28,8 @@ public:
 
     void engineMove();
 
+    void setNewBoard(Board nextBoard);
+    
     void render();
 
     void clean();

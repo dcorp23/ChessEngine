@@ -209,6 +209,20 @@ Board::Board(int piece, int side, map newPieceMap, Board* board, BoardState newS
     All = White | Black;
     
     state = newState;
+    //check if white rooks are captured or moved if they still have castling rights
+    if (state.whiteShortCastle) {
+        if (!(bitMaps[WRook] & whiteShortRookStart)) state.whiteShortCastle = 0;
+    }
+    if (state.whiteLongCastle) {
+        if (!(bitMaps[WRook] & whiteLongRookStart)) state.whiteLongCastle = 0;
+    }
+    //check if black rooks are captured or moved if they still have castling rights
+    if (state.blackShortCastle) {
+        if (!(bitMaps[BRook] & blackShortRookStart)) state.blackShortCastle = 0;
+    }
+    if (state.blackLongCastle) {
+        if (!(bitMaps[BRook] & blackLongRookStart)) state.blackLongCastle = 0;
+    }
 }
 
 //constructor for making a move that moves more than one piece not a promotion
@@ -232,6 +246,20 @@ Board::Board(int piece, int side, map newPieceMap, int secondPiece, map secondPi
     All = White | Black;
     
     state = newState;
+    //check if white rooks are captured or moved if they still have castling rights
+    if (state.whiteShortCastle) {
+        if (!(bitMaps[WRook] & whiteShortRookStart)) state.whiteShortCastle = 0;
+    }
+    if (state.whiteLongCastle) {
+        if (!(bitMaps[WRook] & whiteLongRookStart)) state.whiteLongCastle = 0;
+    }
+    //check if black rooks are captured or moved if they still have castling rights
+    if (state.blackShortCastle) {
+        if (!(bitMaps[BRook] & blackShortRookStart)) state.blackShortCastle = 0;
+    }
+    if (state.blackLongCastle) {
+        if (!(bitMaps[BRook] & blackLongRookStart)) state.blackLongCastle = 0;
+    }
 };
 
 //Constructor for promotions only
@@ -260,6 +288,20 @@ Board::Board(int side, map newPawnMap, int promotionPiece, map promotionPieceMap
     All = White | Black;
     
     state = newState;
+    //check if white rooks are captured or moved if they still have castling rights
+    if (state.whiteShortCastle) {
+        if (!(bitMaps[WRook] & whiteShortRookStart)) state.whiteShortCastle = 0;
+    }
+    if (state.whiteLongCastle) {
+        if (!(bitMaps[WRook] & whiteLongRookStart)) state.whiteLongCastle = 0;
+    }
+    //check if black rooks are captured or moved if they still have castling rights
+    if (state.blackShortCastle) {
+        if (!(bitMaps[BRook] & blackShortRookStart)) state.blackShortCastle = 0;
+    }
+    if (state.blackLongCastle) {
+        if (!(bitMaps[BRook] & blackLongRookStart)) state.blackLongCastle = 0;
+    }
 };
 
 Board Board::move(MoveCode code) {

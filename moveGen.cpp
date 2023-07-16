@@ -554,6 +554,31 @@ void MoveGenerator::validateAllMoves(Board board, std::vector<MoveCode>* moveLis
     }
 }
 
+bool checkForCapture(Board board1, Board board2) {
+    return (getBitCount(board1.All) != getBitCount(board2.All));
+}
+
+void orderBoards(Board originalBoard, std::vector<Board>* source, std::vector<Board>* destination) {
+    destination->clear();
+    std::vector<Board> captures;
+    std::vector<Board> checkMates;
+    std::vector<Board> checks;
+    std::vector<Board> nothing;
+    Board board;
+    int length = source->size();
+    for (int i = 0; i < length; i++) {
+        board = source->at(i);
+        if (board.state.checkMate) {checkMates.push_back(board); continue;}
+        if (board.state.check) {checks.push_back(board); continue;}
+        if (checkForCapture(originalBoard, board)) {captures.push_back(board); continue;}
+        nothing.push_back(board);
+    }
+    destination->insert(destination->end(), checkMates.begin(), checkMates.end());
+    destination->insert(destination->end(), checks.begin(), checks.end());
+    destination->insert(destination->end(), captures.begin(), captures.end());
+    destination->insert(destination->end(), nothing.begin(), nothing.end());
+}
+
 std::vector<Board> MoveGenerator::getAllLegalBoards(Board board) {
     std::vector<MoveCode> moveList;
     moveList.reserve(256);
@@ -574,5 +599,7 @@ std::vector<Board> MoveGenerator::getAllLegalBoards(Board board) {
             validBoards.at(i).state.check = 0;
         }
     }
-    return validBoards;
+    std::vector<Board> filteredBoards;
+    orderBoards(board, &validBoards, &filteredBoards);
+    return filteredBoards;
 };

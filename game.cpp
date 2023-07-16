@@ -73,7 +73,7 @@ void Game::init() {
     filteredMoveList.clear();
 
     //set all possible next boards for the next move
-    possibleNextBoards = MoveGenerator::getAllLegalBoards(board);
+    setNewBoard(board);
 
     //set game to run
     running = true;
@@ -162,10 +162,20 @@ void Game::engineMove() {
     
     //get the best best board
     nextBoard = possibleNextBoards.at(bestIndex);
-    boardHistory.push(board);
-    board = nextBoard;
-    possibleNextBoards = MoveGenerator::getAllLegalBoards(board);
+    std::cout << "Eval: " << bestEval << '\n';
+    setNewBoard(nextBoard);
     engineTurn = false;
+}
+
+//sets the newBoard pushes to history and gets the filtered possible moves
+void Game::setNewBoard(Board nextBoard) {
+    boardHistory.push(board);
+    possibleNextBoards = MoveGenerator::getAllLegalBoards(nextBoard);
+    /*for (int i = 0; i < possibleNextBoards.size(); i++) {
+        possibleNextBoards.at(i).printBoard();
+        std::cout << '\n';
+    } */
+    board = nextBoard;
 }
 
 //updates the state of the game
@@ -220,9 +230,7 @@ void Game::update() {
                     int possibleBoardsSize = possibleNextBoards.size();
                     for (int i = 0; i < possibleBoardsSize; i++) {
                         if (newBoard == possibleNextBoards.at(i)) {
-                            boardHistory.push(possibleNextBoards.at(i));
-                            board = possibleNextBoards.at(i);
-                            possibleNextBoards = MoveGenerator::getAllLegalBoards(board);
+                            setNewBoard(possibleNextBoards.at(i));
                             engineTurn = true;
                             break;
                         }
@@ -249,9 +257,7 @@ void Game::update() {
                     int possibleBoardsSize = possibleNextBoards.size();
                     for (int i = 0; i < possibleBoardsSize; i++) {
                         if (newBoard == possibleNextBoards.at(i)) {
-                            boardHistory.push(possibleNextBoards.at(i));
-                            board = possibleNextBoards.at(i);
-                            possibleNextBoards = MoveGenerator::getAllLegalBoards(board);
+                            setNewBoard(possibleNextBoards.at(i));
                             engineTurn = true;
                             break;
                         }
