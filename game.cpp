@@ -147,7 +147,8 @@ void Game::engineMove() {
     int boardsSize = possibleNextBoards.size();
     for (int i = 0; i < boardsSize; i++) {
         if (futures.size() < NUM_THREADS) {
-            futures.push_back(std::async(std::launch::async, Search::threadMinMax, &possibleNextBoards.at(i), i, &bestIndex, &bestEval, MAX_DEPTH, alpha, beta, weights));
+            futures.push_back(std::async(std::launch::async, Search::threadMinMax, &possibleNextBoards.at(i), i, &bestIndex, &bestEval, MAX_DEPTH, 
+                alpha, beta, weights, board.state.whiteToMove ? true : false));
         }
         else {
             //waits while the max number of threads are active

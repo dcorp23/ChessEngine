@@ -14,6 +14,19 @@ const map whiteLongRookStart = 1ULL << a1;
 const map blackShortRookStart = 1ULL << h8;
 const map blackLongRookStart = 1ULL << a8;
 
+const map rank2 = 0x00FF000000000000;
+const map rank7 = 0x000000000000FF00;
+
+
+//maps for starting squares of all pieces
+namespace StartingSquares {
+const map startingKnights = (1ULL << b8) | (1ULL << g8);
+const map startingBishops = (1ULL << c8) | (1ULL << f8);
+const map startingRooks = (1ULL << a8) | (1ULL << h8);
+const map startingQueen = (1ULL << d8);
+const map startingKing = (1ULL << e8);
+}
+
 //Fen string that creates the starting position
 const std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 

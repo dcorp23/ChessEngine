@@ -1,15 +1,15 @@
 CPPFLAGS = -Wfatal-errors --std=c++17 -pedantic -Ofast
 SDL2FLAGS = -I sdl2/include -L sdl2/lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_image
 
-all: tests main evalTuning
+all: tests main #evalTuning
 
 tests: moveGenTest
 
 main: main.o game.o moveGen.o attackTables.o chessBoard.o bitFunctions.o evaluation.o search.o
 	g++ $(CPPFLAGS) -I sdl2/include -L sdl2/lib main.o game.o bitFunctions.o moveGen.o attackTables.o chessBoard.o evaluation.o search.o -o main -lmingw32 -lSDL2main -lSDL2 -lSDL2_image
 
-evalTuning: evaluationTuning.o moveGen.o attackTables.o chessBoard.o bitFunctions.o evaluation.o search.o
-	g++ $(CPPFLAGS) evaluationTuning.o bitFunctions.o moveGen.o attackTables.o chessBoard.o evaluation.o search.o -o evalTuning
+#evalTuning: evaluationTuning.o moveGen.o attackTables.o chessBoard.o bitFunctions.o evaluation.o search.o
+#	g++ $(CPPFLAGS) evaluationTuning.o bitFunctions.o moveGen.o attackTables.o chessBoard.o evaluation.o search.o -o evalTuning
 
 moveGenTest: moveGenTest.o moveGen.o attackTables.o chessBoard.o bitFunctions.o
 	g++ $(CPPFLAGS) moveGenTest.o bitFunctions.o moveGen.o attackTables.o chessBoard.o -o moveGenTest
@@ -17,8 +17,8 @@ moveGenTest: moveGenTest.o moveGen.o attackTables.o chessBoard.o bitFunctions.o
 main.o: main.cpp
 	g++ $(CPPFLAGS) $(SDL2FLAGS) -c main.cpp -o main.o
 
-evaluationTuning.o: evaluationTuning.cpp
-	g++ $(CPPFLAGS) -c evaluationTuning.cpp -o evaluationTuning.o
+#evaluationTuning.o: evaluationTuning.cpp
+#	g++ $(CPPFLAGS) -c evaluationTuning.cpp -o evaluationTuning.o
 
 evaluation.o: evaluation.cpp evaluation.hpp
 	g++ $(CPPFLAGS) -c evaluation.cpp -o evaluation.o

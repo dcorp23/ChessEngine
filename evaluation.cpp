@@ -139,7 +139,7 @@ float bishopEval(Board* board, int gamePhase) {
     //else check if our bishop is bad or not
     //check if the majority of our pawns are on light 
     //or dark squares and compare that to the remaining bishop
-    if (whitePair) whiteScore += 150;
+    if (whitePair) whiteScore += 175;
     else {
         //get which square the bishop is on
         bool whiteLightSquare = (getLSBIndex(board->bitMaps[WBishop]) % 2 == 0 ? true : false);
@@ -164,7 +164,7 @@ float bishopEval(Board* board, int gamePhase) {
             whiteScore += 50;
         }
     }
-    if (blackPair) blackScore += 150;
+    if (blackPair) blackScore += 175;
     else {
         //get which square the bishop is on
         bool blackLightSquare = (getLSBIndex(board->bitMaps[BBishop]) % 2 == 0 ? true : false);
@@ -478,6 +478,19 @@ std::vector<int> Evaluation::getVectorOfAttackers(Board* board) {
     return attackVector;
 }
 
+float developedPieces(Board* board) {
+    float whiteScore = 0;
+    float blackScore = 0;
+    
+    whiteScore -= getBitCount(board->bitMaps[WBishop] & (StartingSquares::startingBishops << 56)) * 30;
+    whiteScore -= getBitCount(board->bitMaps[WKnight] & (StartingSquares::startingBishops << 56)) * 30;
+
+    blackScore -= getBitCount(board->bitMaps[BBishop] & StartingSquares::startingBishops) * 30;
+    blackScore -= getBitCount(board->bitMaps[BKnight] & StartingSquares::startingKnights) * 30;
+
+    return whiteScore - blackScore;
+}
+
 void Evaluation::initEvaluation() {
     initPassedPawns();
     initIsolatedPawns();
@@ -485,12 +498,12 @@ void Evaluation::initEvaluation() {
 
 EvaluationWeights::EvaluationWeights() {
     material = 1;
-    kingSafety = 0.5;
+    kingSafety = 1;
     activity = 1;
-    pawn = 0.7;
-    bishop = 0.7;
-    knight = 0.9;
-    rook = 0.3;
+    pawn = 1;
+    bishop = 1;
+    knight = 1;
+    rook = 1;
     queen = 1;
 }
 
@@ -507,6 +520,7 @@ void EvaluationWeights::printWeights() {
 
 float Evaluation::evaluate(Board* board, EvaluationWeights weights) {
     if (board->state.checkMate == 1) return (board->state.whiteToMove ? -99999 : 99999);
+    float eval;
 
     int gamePhase;
     gamePhase = determineGamePhase(board);
@@ -531,6 +545,8 @@ float Evaluation::evaluate(Board* board, EvaluationWeights weights) {
     int rookValue = rookEval(board, gamePhase);
     int queenValue = queenEval(board, gamePhase);
     
-    return ((weights.material * materialValue) + (weights.kingSafety * kingSafetyValue) + (weights.activity * activityValue) + (weights.pawn * pawnValue) + 
+    eval = ((weights.material * materialValue) + (weights.kingSafety * kingSafetyValue) + (weights.activity * activityValue) + (weights.pawn * pawnValue) + 
             (weights.bishop * bishopValue) + (weights.knight * knightValue) + (weights.rook * rookValue) + (weights.queen * queenValue));
+    if (opening) eval += developedPieces(board);
+    return eval;
 }

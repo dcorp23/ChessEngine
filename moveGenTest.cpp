@@ -36,6 +36,7 @@ std::vector<Board> timeBoardsAtDepth(std::vector<Board> boards, int depth) {
 bool testForCorrectBoards(std::vector<Board> actual, std::vector<Board> expected, int expectedSize) {
     if (actual.size() != expectedSize) {
         std::cout << "Acutal Size: " << actual.size() << "Expected Size: " << expectedSize << '\n';
+        return false;
     };
     int sampleSize = expected.size();
     int actualSize = actual.size();

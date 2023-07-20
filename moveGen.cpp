@@ -191,9 +191,6 @@ bool isBoardCheckMate(Board board) {
 };
 
 void MoveGenerator::getPawnMoves(Board board, std::vector<MoveCode>* moveList) {
-    //map pawns;
-    map moves = 0ULL;
-
     map beforeMove;
     map afterMove;
     map attackMask;
@@ -316,7 +313,6 @@ void MoveGenerator::getPawnMoves(Board board, std::vector<MoveCode>* moveList) {
 void MoveGenerator::getBishopMoves(Board board, std::vector<MoveCode>* moveList) {
     map beforeMove;
     map attackMask;
-    map afterMove;
     map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
     map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
     MoveCode move;
@@ -352,7 +348,6 @@ void MoveGenerator::getBishopMoves(Board board, std::vector<MoveCode>* moveList)
 void MoveGenerator::getKnightMoves(Board board, std::vector<MoveCode>* moveList) {
     map beforeMove;
     map attackMask;
-    map afterMove;
     map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
     map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
     MoveCode move;
@@ -388,7 +383,6 @@ void MoveGenerator::getKnightMoves(Board board, std::vector<MoveCode>* moveList)
 void MoveGenerator::getRookMoves(Board board, std::vector<MoveCode>* moveList) {
     map beforeMove;
     map attackMask;
-    map afterMove;
     map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
     map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
     MoveCode move;
@@ -424,7 +418,6 @@ void MoveGenerator::getRookMoves(Board board, std::vector<MoveCode>* moveList) {
 void MoveGenerator::getQueenMoves(Board board, std::vector<MoveCode>* moveList) {
     map beforeMove;
     map attackMask;
-    map afterMove;
     map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
     map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
     MoveCode move;
@@ -460,7 +453,6 @@ void MoveGenerator::getQueenMoves(Board board, std::vector<MoveCode>* moveList) 
 void MoveGenerator::getKingMoves(Board board, std::vector<MoveCode>* moveList) {
     map beforeMove;
     map attackMask;
-    map afterMove;
     map teamPieces = (board.state.whiteToMove ? board.White : board.Black);
     map enemyPieces = (board.state.whiteToMove ? board.Black : board.White);
     MoveCode move;
@@ -554,7 +546,7 @@ void MoveGenerator::validateAllMoves(Board board, std::vector<MoveCode>* moveLis
     }
 }
 
-bool checkForCapture(Board board1, Board board2) {
+bool MoveGenerator::checkForCapture(Board board1, Board board2) {
     return (getBitCount(board1.All) != getBitCount(board2.All));
 }
 
@@ -570,7 +562,7 @@ void orderBoards(Board originalBoard, std::vector<Board>* source, std::vector<Bo
         board = source->at(i);
         if (board.state.checkMate) {checkMates.push_back(board); continue;}
         if (board.state.check) {checks.push_back(board); continue;}
-        if (checkForCapture(originalBoard, board)) {captures.push_back(board); continue;}
+        if (MoveGenerator::checkForCapture(originalBoard, board)) {captures.push_back(board); continue;}
         nothing.push_back(board);
     }
     destination->insert(destination->end(), checkMates.begin(), checkMates.end());

@@ -42,4 +42,6 @@ namespace MoveGenerator {
     //returns a pointer to all legal boards and will update the state of the board if
     //it is check or checkmate the returned pointer needs to be freed
     std::vector<Board> getAllLegalBoards(Board board);
+
+    bool checkForCapture(Board board1, Board board2);
 };
